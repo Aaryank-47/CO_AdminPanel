@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
         
         if (storedUser && storedAdminId && storedToken) {
           // Verify token with backend
-          const response = await fetch('http://localhost:5000/api/v1/admin/verify-token', {
+          const response = await fetch('http://localhost:5000/api/v1/admin/verify-token', { 
             method: 'GET',
             credentials: 'include',
             headers: {
