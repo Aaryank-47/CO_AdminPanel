@@ -16,30 +16,43 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedUser = localStorage.getItem("user");
         const storedAdminId = localStorage.getItem("adminId");
-        const storedToken = localStorage.getItem("token");
-        
-        if (storedUser && storedAdminId && storedToken) {
+        const storedadminToken = localStorage.getItem("adminToken");
+
+        // if(!storedUser || !storedAdminId || !storedToken){
+        //   throw new Error("Not getting token or user or adminId", error.message);
+        // }
+
+        // console.log("storedUser : ",storedUser)
+        // console.log("storedAdminId : ", storedAdminId)
+        console.log("storedToken : ", storedadminToken)
+
+        if (storedUser && storedAdminId && storedadminToken) {
           // Verify token with backend
-          const response = await fetch('http://localhost:5000/api/v1/admin/verify-token', { 
+          const response = await fetch('http://localhost:5000/api/v1/admin/verify-token', {
             method: 'GET',
             credentials: 'include',
             headers: {
-              'Authorization': `Bearer ${storedToken}`
+              'Authorization': `Bearer ${storedadminToken}`
             }
           });
+
+          const data = await response.json();
+          console.log("data : ", data)
 
           if (response.ok) {
             setUser({
               ...JSON.parse(storedUser),
               adminId: storedAdminId,
-              token: storedToken
+              adminToken: storedadminToken
             });
-            navigate("/dashboard"); // Redirect to dashboard if authenticated
-          } else {
+            console.log("adminToken Sccuessfully get verified");
+            // navigate("/dashboard"); // Redirect to dashboard if authenticated
+          } else if (!response.ok) {
             // Token is invalid, clear storage
             localStorage.removeItem("user");
             localStorage.removeItem("adminId");
-            localStorage.removeItem("token");
+            localStorage.removeItem("adminToken");
+            throw new Error("Error in verifying the token : ", data.message)
           }
         }
       } catch (error) {
@@ -64,19 +77,23 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
+      console.log("data : ", data)
 
       if (response.ok) {
         const userData = {
           ...data.adminInfo,
           adminId: data.adminId,
-          token: data.token
+          adminToken: data.adminToken
         };
-        
+
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(data.adminInfo));
         localStorage.setItem("adminId", data.adminId);
-        localStorage.setItem("token", data.token);
-        
+        localStorage.setItem("adminToken", data.adminToken);
+
+        console.log("adminToken : ", data.adminToken);
+        console.log("adminId", data.adminId)
+
         toast.success("Logged in successfully");
         navigate("/dashboard");
       } else {
@@ -89,13 +106,13 @@ export const AuthProvider = ({ children }) => {
   }, [navigate]);
 
   const signup = useCallback(async (userData) => {
-    const { adminName, adminEmail, collegeName, adminPassword, phoneNumber, confirmPassword } = userData;
+    const { adminName, adminEmail, collegeName, adminPassword, phoneNumber, confirmPassword, role  } = userData;
 
     if (adminPassword !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-    
+
     try {
       const response = await fetch('http://localhost:5000/api/v1/admin/signup', {
         method: 'POST',
@@ -103,29 +120,32 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
         credentials: "include",
-        body: JSON.stringify({ 
-          adminName, 
-          adminEmail, 
-          collegeName, 
-          adminPassword, 
-          phoneNumber 
+        body: JSON.stringify({
+          adminName,
+          adminEmail,
+          collegeName,
+          adminPassword,
+          phoneNumber,
+          role 
         }),
       });
 
       const data = await response.json();
+      console.log("data : ", data);
 
       if (response.ok) {
         toast.success("Account created successfully!");
         // Auto-login after successful signup
-        await login(adminEmail, adminPassword);
-      } else {
+        navigate("/login");
+      } else if (!response.ok) {
         toast.error(data.message || "Registration failed");
+        console.log("Singup reponse failed : ", data.message)
       }
     } catch (error) {
       toast.error("An error occurred during registration");
       console.error("Registration error:", error);
     }
-  }, [login]);
+  }, [navigate]);
 
   const logout = useCallback(async () => {
     try {
@@ -137,7 +157,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       localStorage.removeItem("user");
       localStorage.removeItem("adminId");
-      localStorage.removeItem("token");
+      localStorage.removeItem("adminToken");
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {

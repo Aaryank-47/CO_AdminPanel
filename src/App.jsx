@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import {useAuth} from "./context/AuthContext.jsx"
 
-import Dashboard from "./pages/Dashboard.jsx";
+import Dashboard from "./pages/Dashboard.jsx"; 
 import Food from "./pages/Food.jsx";
 import Order from "./pages/Order.jsx";
 import Analytics from "./pages/Analytics.jsx";

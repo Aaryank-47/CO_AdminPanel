@@ -10,7 +10,8 @@ const SignupPage = () => {
     collegeName: "",
     phoneNumber: "",
     adminPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    role: "admin"
   });
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
@@ -23,7 +24,7 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.adminPassword !== formData.confirmPassword) {
       toast.error("Passwords don't match");
       return;
@@ -48,7 +49,7 @@ const SignupPage = () => {
           <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
             Create Admin Account
           </h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="adminName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -146,6 +147,23 @@ const SignupPage = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
                 placeholder="••••••••"
               />
+            </div>
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                required
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="admin">Admin</option>
+                <option value="superadmin">Super Admin</option>
+                {/* Add other roles as needed */}
+              </select>
             </div>
 
             <div>
