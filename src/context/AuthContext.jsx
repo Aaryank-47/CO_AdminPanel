@@ -76,7 +76,18 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ adminEmail, adminPassword })
       });
 
+      console.log("Login response : ", response);
+      console.log("Login response status : ", response.status);
+      console.log("Login reponse headers : ", response.headers);
+
+      if (!response.ok) {
+        throw new Error("Login failed with status: " + response.status);
+      }
+
       const data = await response.json();
+      if (!data) {
+        throw new Error("No data received from server : ", data.message);
+      }
       console.log("data : ", data)
 
       if (response.ok) {
