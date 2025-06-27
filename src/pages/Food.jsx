@@ -30,18 +30,26 @@ const Food = () => {
   const categories = ["Fast Food", "Italian", "Healthy", "Snacks", "Beverages", "Hot Drinks", "Icecream", "Cold Drinks"];
 
   useEffect(() => {
+
     const fetchFoodItems = async () => {
+      const adminId = localStorage.getItem('adminId')
+      console.log('adminId : ', adminId);
+
       try {
-        const response = await fetch('http://localhost:5000/api/v1/foods', {
+        const response = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${adminId}`, {
           credentials: 'include',
         });
+
+        const data = await response.json();
+        if (!data) {
+          throw new Error(`Error in fetching foods for this ${adminId}`)
+        }
+        console.log("data : ", data);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log("data : ", data);
 
         setFoodItems(data.foodslist.map(food => ({
           _id: food._id,
@@ -50,10 +58,12 @@ const Food = () => {
           category: food.foodCategory || "",
           description: food.foodDescription || "",
           isVeg: food.isVeg || false,
-          image: food.foodImage || ""
+          image: food.foodImage || "",
+          isActive: food.isActive || false
         })));
 
       } catch (error) {
+
         console.error("Error fetching foods:", error.message);
         toast.error('Failed to load food items');
         setFoodItems([]);
@@ -63,6 +73,46 @@ const Food = () => {
     fetchFoodItems();
   }, []);
 
+  const toggleActiveSatus = async (foodId, currentStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/v1/foods/toggle-active/${foodId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        },
+        body: JSON.stringify({ isActive: !currentStatus })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Http response error status of ${response.status} from the backend server`);
+      }
+
+      const data = await response.json();
+      if (!data) {
+        throw new Error('Error in getting the data : ', data.message)
+      }
+      console.log(data);
+
+      setFoodItems(
+        foodItems.map(items =>
+          items._id === foodId ? { ...items, isActive: !currentStatus } : items
+        ));
+      toast.success(`Item marked as ${!currentStatus ? 'active' : 'inactive'}`);
+
+    } catch (error) {
+
+      console.log("Error toggling the active state", error.message);
+      toast.error(error.message);
+
+      setFoodItems(foodItems.map(item =>
+        item._id === foodId ? { ...item, isActive: currentStatus } : item
+      ));
+
+    }
+  }
+
   const handleAddFood = async () => {
     const formData = new FormData();
     formData.append('foodName', newFood.foodName);
@@ -70,6 +120,8 @@ const Food = () => {
     formData.append('foodCategory', newFood.foodCategory);
     formData.append('foodDescription', newFood.foodDescription);
     formData.append('isVeg', newFood.isVeg);
+    formData.append('isActive', newFood.isActive);
+
     if (newFood.foodImage) {
       formData.append('foodImage', newFood.foodImage);
     }
@@ -96,11 +148,14 @@ const Food = () => {
         foodCategory: "",
         foodImage: null,
         foodDescription: "",
-        isVeg: false
+        isVeg: false,
+        isActive: true
       });
 
+
+
       // Refresh the food list
-      const refreshResponse = await fetch('http://localhost:5000/api/v1/foods', {
+      const refreshResponse = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${localStorage.getItem('adminId')}`, {
         credentials: 'include',
       });
       const refreshData = await refreshResponse.json();
@@ -111,6 +166,7 @@ const Food = () => {
         category: food.foodCategory || "",
         description: food.foodDescription || "",
         isVeg: food.isVeg || false,
+        isActive: food.isActive || false,
         image: food.foodImage || ""
       })));
 
@@ -128,6 +184,7 @@ const Food = () => {
       formData.append('foodCategory', currentFood.foodCategory);
       formData.append('foodDescription', currentFood.foodDescription || '');
       formData.append('isVeg', String(currentFood.isVeg));
+      formData.append('isActive', String(currentFood.isActive));
 
       if (currentFood.foodImage instanceof File) {
         formData.append('foodImage', currentFood.foodImage);
@@ -137,7 +194,7 @@ const Food = () => {
         method: 'PUT',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: formData
       });
@@ -158,6 +215,7 @@ const Food = () => {
           category: currentFood.foodCategory,
           description: currentFood.foodDescription,
           isVeg: currentFood.isVeg,
+          isActive: currentFood.isActive,
           image: data.foodImage || item.image  // Use new image if returned, otherwise keep old one
         } : item
       ));
@@ -166,8 +224,10 @@ const Food = () => {
       setIsEditModalOpen(false);
 
     } catch (error) {
+
       console.log('Error on editing food: ', error.message);
       toast.error('Error on editing food');
+
     }
   };
 
@@ -277,13 +337,16 @@ const Food = () => {
                   Category
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {foodItems.map((item) => (
-                <tr key={item._id}>
+                <tr key={item._id} className={!item.isActive ? "opacity-70 bg-gray-50 dark:bg-gray-700" : ""} >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <img
                       src={item.image || "https://via.placeholder.com/150"}
@@ -302,6 +365,17 @@ const Food = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
+                      onClick={() => toggleActiveSatus(item._id, item.isActive)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${item.isActive
+                        ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200"
+                        : "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200"
+                        }`}
+                    >
+                      {item.isActive ? "Active" : "Inactive"}
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
                       onClick={() => {
                         setCurrentFood({
                           _id: item._id,
@@ -310,6 +384,7 @@ const Food = () => {
                           foodCategory: item.category || "",
                           foodDescription: item.description || "",
                           isVeg: item.isVeg || false,
+                          isActive: item.isActive,
                           foodImage: item.image || null
                         });
                         setIsEditModalOpen(true);
@@ -415,6 +490,17 @@ const Food = () => {
                     Vegetarian
                   </label>
                 </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newFood.isActive}
+                    onChange={(e) => setNewFood({ ...newFood, isActive: e.target.checked })}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Available for ordering
+                  </label>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Food Image
@@ -505,6 +591,19 @@ const Food = () => {
                       </option>
                     ))}
                   </select>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      value={currentFood.foodDescription}
+                      onChange={(e) =>
+                        setCurrentFood({ ...currentFood, foodDescription: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <input
@@ -519,18 +618,16 @@ const Food = () => {
                     Vegetarian
                   </label>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Description
-                  </label>
+                <div className="flex items-center">
                   <input
-                    type="text"
-                    value={currentFood.foodDescription}
-                    onChange={(e) =>
-                      setCurrentFood({ ...currentFood, foodDescription: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                    type="checkbox"
+                    checked={currentFood.isActive}
+                    onChange={(e) => setCurrentFood({ ...currentFood, isActive: e.target.checked })}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
+                  <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Available for ordering
+                  </label>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

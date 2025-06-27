@@ -27,6 +27,7 @@ const Order = () => {
 
 
       } catch (error) {
+        
         console.log("Error in fetching all orders : ", error.message);
         toast.error("Error in fetching all the todays orders");
       }
