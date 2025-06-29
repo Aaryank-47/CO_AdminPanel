@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
@@ -14,8 +14,45 @@ const SignupPage = () => {
     role: "admin"
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [colleges, setColleges] = useState([]);
+  const [collegesLoading, setCollegesLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    const fetchAllColleges = async () => {
+      setCollegesLoading(true);
+      try {
+
+        const response = await fetch("http://localhost:5000/api/v1/colleges/all-colleges");
+        const data = await response.json();
+        if (!data) {
+          console.error("No data received from colleges API", data.message);
+        }
+        console.log("Colleges Data:", data);
+
+
+        if (!response.ok) throw new Error(data.message || "Failed to fetch colleges");
+
+        // Handle both array and object responses
+        const collegeList = Array.isArray(data) ? data : data.colleges || [];
+        setColleges(collegeList);
+
+      } catch (error) {
+
+        console.error("Error fetching colleges:", error.message);
+        setError("Failed to load colleges. Please try again later.");
+
+      } finally {
+
+        setCollegesLoading(false);
+
+      }
+    };
+
+    fetchAllColleges();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +64,11 @@ const SignupPage = () => {
 
     if (formData.adminPassword !== formData.confirmPassword) {
       toast.error("Passwords don't match");
+      return;
+    }
+
+    if (!formData.collegeName) {
+      toast.error("Please select a college");
       return;
     }
 
@@ -87,6 +129,33 @@ const SignupPage = () => {
               <label htmlFor="collegeName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 College Name
               </label>
+              <select
+                id="collegeName"
+                name="collegeName"
+                value={formData.collegeName}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                disabled={collegesLoading}
+              >
+                {collegesLoading ? (
+                  <option value="">Loading colleges...</option>
+                ) : (
+                  <>
+                    <option value="" disabled>Select your college</option>
+                    {Array.isArray(colleges) && colleges.map(college => (
+                      <option key={college._id} value={college.collegeName}>
+                        {college.collegeName}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
+            </div>
+            {/* <div>
+              <label htmlFor="collegeName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                College Name
+              </label>
               <input
                 id="collegeName"
                 name="collegeName"
@@ -97,7 +166,7 @@ const SignupPage = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Your College Name"
               />
-            </div>
+            </div> */}
 
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
