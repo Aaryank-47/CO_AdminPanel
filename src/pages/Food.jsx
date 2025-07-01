@@ -15,7 +15,8 @@ const Food = () => {
     foodCategory: "",
     foodImage: null,
     foodDescription: "",
-    isVeg: false
+    isVeg: false,
+    isActive: false
   });
 
   const [newFood, setNewFood] = useState({
@@ -24,10 +25,11 @@ const Food = () => {
     foodCategory: "",
     foodImage: null,
     foodDescription: "",
-    isVeg: false
+    isVeg: false,
+    isActive: false
   });
 
-  const categories = ["Fast Food", "Italian", "Healthy", "Snacks", "Beverages", "Hot Drinks", "Icecream", "Cold Drinks"];
+  const categories = ["Fast Food", "Italian", "Healthy", "Snacks","Chinese", "Beverages", "Hot Drinks", "Icecream", "Cold Drinks"];
 
   useEffect(() => {
 
@@ -384,7 +386,7 @@ const Food = () => {
                           foodCategory: item.category || "",
                           foodDescription: item.description || "",
                           isVeg: item.isVeg || false,
-                          isActive: item.isActive,
+                          isActive: item.isActive || true,
                           foodImage: item.image || null
                         });
                         setIsEditModalOpen(true);
