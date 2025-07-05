@@ -11,7 +11,7 @@ const RealTimeClock = () => {
   }, []);
 
   return (
-    <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+    <div className="text-sm font-medium text-black dark:text-black">
       🕒 {time}
     </div>
   );

@@ -16,7 +16,7 @@
 //             credentials: 'include'
 //           }
 //         );
-        
+
 //         if (!response.ok) {
 //           throw new Error(`HTTP error! status: ${response.status}`);
 //         }
@@ -63,7 +63,7 @@
 //       setOrders(orders.map(order => 
 //         order.orderNumber === orderNumber ? { ...order, status: newStatus } : order
 //       ));
-      
+
 //       toast.success(`Order #${orderNumber} status updated to ${newStatus}`);
 //     } catch (error) {
 //       console.error("Status update error:", error);
@@ -247,15 +247,19 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import Lottie from "lottie-react";
+import animationData from "../assets/No_Order.json"; // Adjust path to your JSON file
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
   const adminId = localStorage.getItem("adminId");
 
   useEffect(() => {
     const fetchAllOrders = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(
           `http://localhost:5000/api/v1/orders/get-all-orders/${adminId}`,
           {
@@ -263,7 +267,7 @@ const Order = () => {
             credentials: 'include'
           }
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -280,6 +284,8 @@ const Order = () => {
       } catch (error) {
         console.log("Error in fetching all orders : ", error.message);
         toast.error(error.message || "Error in fetching orders");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -304,22 +310,16 @@ const Order = () => {
         throw new Error('Failed to update status');
       }
 
-      setOrders(orders.map(order => 
+      setOrders(orders.map(order =>
         order._id === orderId ? { ...order, status: newStatus } : order
       ));
-      
+
       toast.success(`Order #${orderId} status updated to ${newStatus}`);
     } catch (error) {
       console.error("Status update error:", error);
       toast.error("Failed to update order status");
     }
   };
-
-  const filteredOrders = filterStatus === "all"
-    ? orders
-    : orders.filter(order => 
-        filterStatus === order.status.toLowerCase()
-      );
 
   const getStatusColor = (status) => {
     const statusLower = status.toLowerCase();
@@ -338,20 +338,86 @@ const Order = () => {
   };
 
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const filteredOrders = filterStatus === "all"
+    ? orders
+    : orders.filter(order =>
+      filterStatus === order.status.toLowerCase()
+    );
+
+  // Check if there are any orders from today
+  const hasOrdersToday = filteredOrders.some(order => {
+    const orderDate = new Date(order.createdAt);
+    const today = new Date();
+    return (
+      orderDate.getDate() === today.getDate() &&
+      orderDate.getMonth() === today.getMonth() &&
+      orderDate.getFullYear() === today.getFullYear()
+    );
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
+  if (filteredOrders.length === 0 || !hasOrdersToday) {
+    return (
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-black dark:text-black">
+            Orders Management
+          </h1>
+          <div className="flex items-center space-x-4">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="all">All Orders</option>
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="ready">Ready</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-64 h-64">
+            <Lottie
+              animationData={animationData}
+              loop={true}
+              autoplay={true}
+            />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-900 mt-4">
+            No orders received yet today
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Check back later or refresh the page
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+        <h1 className="text-2xl font-semibold text-black dark:text-black">
           Orders Management
         </h1>
         <div className="flex items-center space-x-4">

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import emptyAnimation from "../assets/FoodMenu.json"
+import { Player } from '@lottiefiles/react-lottie-player';
 
 const Food = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -29,7 +31,7 @@ const Food = () => {
     isActive: false
   });
 
-  const categories = ["Fast Food", "Italian", "Healthy", "Snacks","Chinese", "Beverages", "Hot Drinks", "Icecream", "Cold Drinks"];
+  const categories = ["Fast Food", "Italian", "Healthy", "Snacks", "Chinese", "Beverages", "Hot Drinks", "Icecream", "Cold Drinks"];
 
   useEffect(() => {
 
@@ -310,7 +312,7 @@ const Food = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+        <h1 className="text-2xl font-semibold text-black dark:text-black">
           Manage Food Items
         </h1>
         <button
@@ -404,6 +406,22 @@ const Food = () => {
                   </td>
                 </tr>
               ))}
+
+              {foodItems.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="py-10 text-center">
+                    <div className="flex flex-col items-center">
+                      <Player
+                        autoplay
+                        loop
+                        src={emptyAnimation}
+                        style={{ height: '200px', width: '200px' }}
+                      />
+                      <p className="mt-4 text-gray-600 dark:text-gray-300">No food items found!</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

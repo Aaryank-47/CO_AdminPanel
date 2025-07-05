@@ -21,7 +21,7 @@ const AppContent = () => {
   const { user } = useAuth();
 
   return (
-    <div className="w-screen flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="w-screen flex h-screen bg-gray-50 dark:bg-white-900">
       {user && <Sidebar />}
       
       <div className="w-full flex flex-col flex-1 overflow-hidden">
