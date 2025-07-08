@@ -27,7 +27,8 @@ const AdminProfile = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/v1/admin/profile/${adminId}`, {
+      // const response = await fetch(`http://localhost:5000/api/v1/admin/profile/${adminId}`, {
+      const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/admin/profile/${adminId}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -69,7 +70,8 @@ const AdminProfile = () => {
 
   const updateAdminProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/admin/update-profile/${adminId}`, {
+      // const response = await fetch(`http://localhost:5000/api/v1/admin/update-profile/${adminId}`, {
+      const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/admin/update-profile/${adminId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {

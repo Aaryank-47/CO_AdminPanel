@@ -257,14 +257,22 @@ const Order = () => {
   const adminId = localStorage.getItem("adminId");
 
   useEffect(() => {
+    const adminToken = localStorage.getItem("adminToken");
+    console.log('adminToken via todaysTotalOrders : ', adminToken)
+
     const fetchAllOrders = async () => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `http://localhost:5000/api/v1/orders/get-all-orders/${adminId}`,
+          // `http://localhost:5000/api/v1/orders/get-all-orders/${adminId}`,
+          `https://canteen-order-backend.onrender.com/api/v1/orders/get-all-orders/${adminId}`,
           {
             method: 'GET',
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+              // 'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
           }
         );
 
@@ -294,12 +302,17 @@ const Order = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
+      const adminToken = localStorage.getItem("adminToken");
+      console.log('adminToken via todaysTotalOrders : ', adminToken)
+
       const response = await fetch(
-        `http://localhost:5000/api/v1/orders/update-status/${orderId}`,
+        // `http://localhost:5000/api/v1/orders/update-status/${orderId}`,
+        `https://canteen-order-backend.onrender.com/api/v1/orders/update-status/${orderId}`,
         {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json',
+            // 'Authorization': `Bearer ${adminToken}`,
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ status: newStatus }),
           credentials: 'include'

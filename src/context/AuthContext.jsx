@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 const AuthContext = createContext();
@@ -8,182 +8,190 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const clearAuthData = () => {
+    localStorage.removeItem("admin");
+    localStorage.removeItem("adminId");
+    localStorage.removeItem("adminToken");
+    setUser(null);
+  };
 
   // Initialize auth state
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        const storedAdminId = localStorage.getItem("adminId");
-        const storedadminToken = localStorage.getItem("adminToken");
+        const admin = localStorage.getItem("admin");
+        const adminId = localStorage.getItem("adminId");
+        const adminToken = localStorage.getItem("adminToken");
 
-        // if(!storedUser || !storedAdminId || !storedToken){
-        //   throw new Error("Not getting token or user or adminId", error.message);
-        // }
+        if (!admin || !adminId || !adminToken) {
+          clearAuthData();
+          return;
+        }
 
-        // console.log("storedUser : ",storedUser)
-        // console.log("storedAdminId : ", storedAdminId)
-        console.log("storedToken : ", storedadminToken)
+        // Verify token with backend
+        const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/verify-token', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${adminToken}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include' // Essential for cookies
+        });
 
-        if (storedUser && storedAdminId && storedadminToken) {
-          // Verify token with backend
-          const response = await fetch('http://localhost:5000/api/v1/admin/verify-token', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Authorization': `Bearer ${storedadminToken}`
-            }
-          });
+        if (!response.ok) {
+          throw new Error("Token verification failed");
+        }
 
-          const data = await response.json();
-          console.log("data : ", data)
+        const data = await response.json();
+        setUser({
+          ...JSON.parse(admin),
+          adminId,
+          adminToken
+        });
 
-          if (response.ok) {
-            setUser({
-              ...JSON.parse(storedUser),
-              adminId: storedAdminId,
-              adminToken: storedadminToken
-            });
-            console.log("adminToken Sccuessfully get verified");
-            // navigate("/dashboard"); // Redirect to dashboard if authenticated
-          } else if (!response.ok) {
-            // Token is invalid, clear storage
-            localStorage.removeItem("user");
-            localStorage.removeItem("adminId");
-            localStorage.removeItem("adminToken");
-            throw new Error("Error in verifying the token : ", data.message)
-          }
+        // Only redirect if we're on auth pages
+        if (['/login', '/signup'].includes(location.pathname)) {
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error("Auth verification error:", error);
+        clearAuthData();
       } finally {
         setLoading(false);
+        setAuthChecked(true);
       }
     };
 
     checkAuthStatus();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const login = useCallback(async (adminEmail, adminPassword) => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/admin/login', {
+      setLoading(true);
+      
+      const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/login', {
         method: 'POST',
-        credentials: 'include',
         headers: {
           "Content-Type": "application/json"
         },
+        credentials: 'include', // Essential for cookies
         body: JSON.stringify({ adminEmail, adminPassword })
       });
 
-      console.log("Login response : ", response);
-      console.log("Login response status : ", response.status);
-      console.log("Login reponse headers : ", response.headers);
-
       if (!response.ok) {
-        throw new Error("Login failed with status: " + response.status);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
 
       const data = await response.json();
-      if (!data) {
-        throw new Error("No data received from server : ", data.message);
+      
+      // Validate response structure
+      if (!data?.adminInfo || !data?.adminId || !data?.adminToken) {
+        throw new Error("Invalid response data from server");
       }
-      console.log("data : ", data)
 
-      if (response.ok) {
-        const userData = {
-          ...data.adminInfo,
-          adminId: data.adminId,
-          adminToken: data.adminToken
-        };
+      // Store all auth data
+      localStorage.setItem("admin", JSON.stringify(data.adminInfo));
+      localStorage.setItem("adminId", data.adminId);
+      localStorage.setItem("adminToken", data.adminToken);
 
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(data.adminInfo));
-        localStorage.setItem("adminId", data.adminId);
-        localStorage.setItem("adminToken", data.adminToken);
+      // Update state
+      setUser({
+        ...data.adminInfo,
+        adminId: data.adminId,
+        adminToken: data.adminToken
+      });
 
-        console.log("adminToken : ", data.adminToken);
-        console.log("adminId", data.adminId)
-
-        toast.success("Logged in successfully");
-        navigate("/dashboard");
-      } else {
-        toast.error(data.message || "Login failed");
-      }
+      toast.success("Logged in successfully");
+      navigate('/dashboard');
+      
+      return true;
     } catch (error) {
-      toast.error("An error occurred during login");
       console.error("Login error:", error);
+      toast.error(error.message || "Login failed. Please try again.");
+      return false;
+    } finally {
+      setLoading(false);
     }
   }, [navigate]);
 
   const signup = useCallback(async (userData) => {
-    const { adminName, adminEmail, collegeName, adminPassword, phoneNumber, confirmPassword, role  } = userData;
+    const { adminName, adminEmail, collegeName, adminPassword, phoneNumber, confirmPassword, role } = userData;
 
     if (adminPassword !== confirmPassword) {
       toast.error("Passwords do not match");
-      return;
+      return false;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/admin/signup', {
+      const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
           adminName,
           adminEmail,
           collegeName,
           adminPassword,
           phoneNumber,
-          role 
+          role
         }),
       });
 
-      const data = await response.json();
-      console.log("data : ", data);
-
-      if (response.ok) {
-        toast.success("Account created successfully!");
-        // Auto-login after successful signup
-        navigate("/login");
-      } else if (!response.ok) {
-        toast.error(data.message || "Registration failed");
-        console.log("Singup reponse failed : ", data.message)
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
       }
+
+      toast.success("Account created successfully!");
+      navigate('/login');
+      return true;
     } catch (error) {
-      toast.error("An error occurred during registration");
       console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
+      return false;
     }
   }, [navigate]);
 
   const logout = useCallback(async () => {
     try {
-      await fetch('http://localhost:5000/api/v1/admin/logout', {
+      await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/logout', {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'include'
       });
-
-      setUser(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("adminId");
-      localStorage.removeItem("adminToken");
-      toast.success("Logged out successfully");
-      navigate("/login");
     } catch (error) {
-      toast.error("An error occurred during logout");
-      console.error("Logout error:", error);
+      console.error("Logout API error:", error);
+    } finally {
+      clearAuthData();
+      toast.success("Logged out successfully");
+      navigate('/login');
     }
   }, [navigate]);
+
+  // Function to get auth headers for API requests
+  const getAuthHeaders = useCallback(() => {
+    const adminToken = localStorage.getItem("adminToken");
+    return {
+      'Authorization': `Bearer ${adminToken}`,
+      'Content-Type': 'application/json'
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{
       user,
-      loading,
+      loading: loading || !authChecked,
       login,
       signup,
-      logout
+      logout,
+      getAuthHeaders,
+      isAuthenticated: !!user
     }}>
       {children}
     </AuthContext.Provider>
@@ -191,5 +199,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

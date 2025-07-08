@@ -42,11 +42,17 @@ const Dashboard = () => {
 
   const todaysTotalOrders = async () => {
     try {
-      const reponse = await fetch("http://localhost:5000/api/v1/orders/todays-total-orders", {
+
+      const adminToken = localStorage.getItem("adminToken");
+      console.log('adminToken via todaysTotalOrders : ', adminToken)
+
+      // const reponse = await fetch("http://localhost:5000/api/v1/orders/todays-total-orders", {
+      const reponse = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-total-orders", {
         method: "GET",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          // 'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
         },
 
       });
@@ -71,12 +77,18 @@ const Dashboard = () => {
   }
 
   const getRevenueToday = async () => {
+
+    const adminToken = localStorage.getItem("adminToken");
+    console.log('adminToken via todaysTotalOrders : ', adminToken)
+
     try {
-      const response = await fetch("http://localhost:5000/api/v1/orders/todays-revenue", {
+      // const response = await fetch("http://localhost:5000/api/v1/orders/todays-revenue", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-revenue", {
         method: "GET",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          // 'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
         },
       });
 
@@ -100,11 +112,17 @@ const Dashboard = () => {
 
   const topSellingFood = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
+
+      const adminToken = localStorage.getItem("adminToken");
+      console.log('adminToken via todaysTotalOrders : ', adminToken)
+
+      // const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
         method: "GET",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          // 'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
         },
       });
 
@@ -164,12 +182,18 @@ const Dashboard = () => {
   }
 
   const fetchOrdesPerDayData = async () => {
+
+    const adminToken = localStorage.getItem("adminToken");
+    console.log('adminToken via todaysTotalOrders : ', adminToken)
+
     try {
-      const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
+      // const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/orders-per-day", {
         method: "GET",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          // 'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
         },
       });
 
@@ -218,11 +242,16 @@ const Dashboard = () => {
 
 
   const fetchPeakHoursData = async () => {
-    const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
+    const adminToken = localStorage.getItem("adminToken");
+    console.log('adminToken via todaysTotalOrders : ', adminToken);
+
+    // const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
+    const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
       method: "GET",
-      credentials: "include",
+      // credentials: "include",
       headers: {
-        "Content-Type": "application/json",
+        // 'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json'
       },
     });
 

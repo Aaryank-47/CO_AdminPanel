@@ -40,7 +40,8 @@ const Food = () => {
       console.log('adminId : ', adminId);
 
       try {
-        const response = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${adminId}`, {
+        // const response = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${adminId}`, {
+        const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/canteens-menu/${adminId}`, {
           credentials: 'include',
         });
 
@@ -79,12 +80,13 @@ const Food = () => {
 
   const toggleActiveSatus = async (foodId, currentStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/foods/toggle-active/${foodId}`, {
+      // const response = await fetch(`http://localhost:5000/api/v1/foods/toggle-active/${foodId}`, {
+      const response = await fetch(`https://canteen-order-backend/.onrender.com/api/v1/foods/toggle-active/${foodId}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          // 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify({ isActive: !currentStatus })
       })
@@ -131,7 +133,8 @@ const Food = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/foods/create', {
+      // const response = await fetch('http://localhost:5000/api/v1/foods/create', {
+      const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/foods/create', {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -159,7 +162,8 @@ const Food = () => {
 
 
       // Refresh the food list
-      const refreshResponse = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${localStorage.getItem('adminId')}`, {
+      // const refreshResponse = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${localStorage.getItem('adminId')}`, {
+      const refreshResponse = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/canteens-menu/${localStorage.getItem('adminId')}`, {
         credentials: 'include',
       });
       const refreshData = await refreshResponse.json();
@@ -194,11 +198,12 @@ const Food = () => {
         formData.append('foodImage', currentFood.foodImage);
       }
 
-      const response = await fetch(`http://localhost:5000/api/v1/foods/update/${currentFood._id}`, {
+      // const response = await fetch(`http://localhost:5000/api/v1/foods/update/${currentFood._id}`, {
+      const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/update/${currentFood._id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          // 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: formData
       });
@@ -288,11 +293,13 @@ const Food = () => {
   const handleDeleteFood = async (id) => {
     if (window.confirm("Are you sure you want to delete this food item?")) {
       try {
-        const response = await fetch(`http://localhost:5000/api/v1/foods/delete/${id}`, {
+        // const response = await fetch(`http://localhost:5000/api/v1/foods/delete/${id}`, {
+        const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/delete/${id}`, {
           method: 'DELETE',
           credentials: 'include',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+            "Content-Type" : "application/json"
           }
         });
 
