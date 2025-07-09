@@ -270,7 +270,7 @@ const Order = () => {
             method: 'GET',
             credentials: 'include',
             headers: {
-              // 'Authorization': `Bearer ${adminToken}`,
+              'Authorization': `Bearer ${adminToken}`,
               'Content-Type': 'application/json'
             },
           }
@@ -311,7 +311,7 @@ const Order = () => {
         {
           method: 'PATCH',
           headers: {
-            // 'Authorization': `Bearer ${adminToken}`,
+            'Authorization': `Bearer ${adminToken}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ status: newStatus }),

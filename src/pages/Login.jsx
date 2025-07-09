@@ -9,7 +9,8 @@ const LoginPage = () => {
     adminPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { setUser } = useAuth();
+  // const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -17,18 +18,57 @@ const LoginPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      await login(formData.adminEmail, formData.adminPassword);
+      const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const { message } = await response.json();
+        throw new Error(message || "Login failed");
+      }
+
+      const data = await response.json();
+      if(!data){
+        console.log("There is problem in fetching the data : ", data.message);
+      }
+      console.log("data.adminInfo : ", data.adminInfo);
+      setUser(data.adminInfo);
+
+      localStorage.setItem("admin", JSON.stringify(data.adminInfo));
+      localStorage.setItem("adminId", data.adminId);
+      localStorage.setItem("adminToken", data.adminToken);
+
+      toast.success("Logged in successfully");
+      navigate('/dashboard');
+
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error:", error.message);
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
   };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+
+  //   try {
+  //     await login(formData.adminEmail, formData.adminPassword);
+  //   } catch (error) {
+  //     console.error("Login error:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
@@ -37,7 +77,7 @@ const LoginPage = () => {
           <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
             Admin Login
           </h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
