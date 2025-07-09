@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     const adminToken = localStorage.getItem("adminToken");
     const adminInfo = localStorage.getItem("admin");
+    
     if(!adminToken){
       console.error('Not getting adminToekn from the local storage ');
     }
