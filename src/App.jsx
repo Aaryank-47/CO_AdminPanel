@@ -20,7 +20,7 @@ import SignUp from "./pages/SignUp.jsx"
 const AppContent = () => {
   const { user } = useAuth();
 
-  return (
+ return (
     <div className="w-screen flex h-screen bg-gray-50 dark:bg-white-900">
       {user && <Sidebar />}
       
@@ -29,13 +29,11 @@ const AppContent = () => {
         
         <main className="w-full flex-1 overflow-y-auto p-4 md:p-6">
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp/>} />
+            <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
+            <Route path="/signup" element={user ? <Navigate to="/" /> : <SignUp />} />
             
             <Route path="/" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
+              user ? <Dashboard /> : <Navigate to="/login" />
             } />
             
             <Route path="/food" element={

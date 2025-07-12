@@ -10,12 +10,14 @@ import {
   ArcElement,
   PointElement,
   LineElement,
+  Filler,
+  RadialLinearScale,
 } from "chart.js";
-import { Bar, Pie, Line } from "react-chartjs-2";
-import { Player } from '@lottiefiles/react-lottie-player';
-import noDataAnimation from "../assets/no_animationData.json"
-import { use } from "react";
+import { Bar, Pie, Line, Radar, Doughnut } from "react-chartjs-2";
+import { Player } from "@lottiefiles/react-lottie-player";
+import noDataAnimation from "../assets/no_animationData.json"; // Make sure you have this file
 
+// Register all necessary Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,784 +27,339 @@ ChartJS.register(
   Legend,
   ArcElement,
   PointElement,
-  LineElement
+  LineElement,
+  Filler,
+  RadialLinearScale
 );
 
-const Dashboard = () => {
-  const [stats, setStats] = useState({
-    todayOrders: 0,
-    revenueToday: 0,
-    newCustomers: 8,
-    topSellingFood: "Loading...",
-  });
-
-  const [ordersPerDayData, setOrdersPerDayData] = useState(null);
-  const [peakOrderHoursData, setPeakOrderHoursData] = useState(null);
-  const [foodPopularityData, setFoodPopularityData] = useState(null);
-
-  const todaysTotalOrders = async () => {
-    try {
-
-      const adminToken = localStorage.getItem("adminToken");
-      console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-      // const reponse = await fetch("http://localhost:5000/api/v1/orders/todays-total-orders", {
-      const reponse = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-total-orders", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        },
-
-      });
-
-      const data = await reponse.json();
-      console.log("Today's total orders:", data);
-
-      if (reponse.ok) {
-        setStats((prevStats) => ({
-          ...prevStats,
-          todayOrders: data.totalOrders,
-        }));
-
-      } else {
-        console.error("Failed to fetch today's total orders:", data.message);
-      }
-
-    } catch (error) {
-      console.error("Error fetching today's total orders:", error);
-    }
-
-  }
-
-  const getRevenueToday = async () => {
-
-    const adminToken = localStorage.getItem("adminToken");
-    console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-    try {
-      // const response = await fetch("http://localhost:5000/api/v1/orders/todays-revenue", {
-      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-revenue", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        },
-      });
-
-      const data = await response.json();
-      console.log("Today's revenue:", data);
-
-      if (response.ok) {
-        setStats((prevStats) => ({
-          ...prevStats,
-          revenueToday: data.totalRevenueSum,
-        }));
-
-      } else {
-        console.error("Failed to fetch today's revenue:", data.message);
-      }
-
-    } catch (error) {
-      console.error("Error fetching today's revenue:", error);
-    }
-  }
-
-  const topSellingFood = async () => {
-    try {
-
-      const adminToken = localStorage.getItem("adminToken");
-      console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-      // const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
-      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        },
-      });
-
-      const data = await response.json();
-      if (!data) {
-        console.error("No data received from server");
-      }
-      console.log("Top selling food:", data);
-
-      if (response.ok) {
-
-        const labels = data.populatedFoods.map(item => item.foodName);
-        const values = data.populatedFoods.map(item => item.quantity);
-
-        console.log("Labels:", labels);
-        console.log("Values:", values);
-
-        setStats((prevStats) => ({
-          ...prevStats,
-          topSellingFood: labels[0] || "N/A",
-        }));
-
-        setFoodPopularityData({
-          labels,
-          datasets: [
-            {
-              label: "Orders",
-              data: values,
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.5)",
-                "rgba(54, 162, 235, 0.5)",
-                "rgba(255, 206, 86, 0.5)",
-                "rgba(75, 192, 192, 0.5)",
-                "rgba(153, 102, 255, 0.5)",
-                "rgba(255, 159, 64, 0.5)",
-              ],
-              borderColor: [
-                "rgba(255, 99, 132, 1)",
-                "rgba(54, 162, 235, 1)",
-                "rgba(255, 206, 86, 1)",
-                "rgba(75, 192, 192, 1)",
-                "rgba(153, 102, 255, 1)",
-                "rgba(255, 159, 64, 1)",
-              ],
-              borderWidth: 1,
-            },
-          ],
-        });
-
-      } else {
-        console.error("Failed to fetch top selling food:", data.message);
-      }
-
-    } catch (error) {
-      console.error("Error fetching top selling food:", error);
-    }
-  }
-
-  const fetchOrdesPerDayData = async () => {
-
-    const adminToken = localStorage.getItem("adminToken");
-    console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-    try {
-      // const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
-      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/orders-per-day", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        },
-      });
-
-      const data = await response.json();
-      console.log("Orders per day data:", data);
-
-      if (response.ok) {
-        const labels = data.ordersPerDay.map(item => item.date);
-        const values = data.ordersPerDay.map(item => item.count);
-
-        setOrdersPerDayData({
-          labels,
-          datasets: [
-            {
-              label: "Orders per Day",
-              data: values,
-              backgroundColor: "rgba(124, 58, 237, 0.5)",
-              borderColor: "rgba(124, 58, 237, 1)",
-              borderWidth: 1,
-            },
-          ],
-        });
-      } else {
-        console.error("Failed to fetch orders per day data:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching orders per day data:", error);
-
-    }
-  }
-
-  const ordersData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+// A reusable mini chart for the metric cards
+const MiniChart = ({ data, strokeColor, fillColor }) => {
+  const chartData = {
+    labels: data.map((_, i) => i),
     datasets: [
       {
-        label: "Orders",
-        data: [65, 59, 80, 81, 56, 55, 40],
-        backgroundColor: "rgba(124, 58, 237, 0.5)",
-        borderColor: "rgba(124, 58, 237, 1)",
-        borderWidth: 1,
+        data: data,
+        borderColor: strokeColor,
+        backgroundColor: fillColor,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 0,
+        borderWidth: 2,
       },
     ],
   };
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 0,
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+    },
+    scales: {
+      x: { display: false },
+      y: { display: false },
+    },
+  };
 
+  return <Line data={chartData} options={options} />;
+};
 
+const Dashboard = () => {
+  // Enhanced state with trend data for metric cards
+  const [stats, setStats] = useState({
+    todayOrders: 152,
+    revenueToday: 85300,
+    newCustomers: 12,
+    topSellingFood: "Gourmet Burger",
+    trends: {
+      orders: [110, 120, 145, 130, 140, 152],
+      revenue: [65000, 70000, 75000, 82000, 80000, 85300],
+      customers: [5, 7, 6, 9, 11, 12],
+      topFood: [30, 40, 35, 50, 45, 60],
+    },
+  });
 
-  const fetchPeakHoursData = async () => {
-    const adminToken = localStorage.getItem("adminToken");
-    console.log('adminToken via todaysTotalOrders : ', adminToken);
+  const [liveData, setLiveData] = useState([45, 60, 55, 70, 65, 80, 75, 90, 85, 70]);
 
-    // const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
-    const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
-      method: "GET",
-      // credentials: "include",
-      headers: {
-        'Authorization': `Bearer ${adminToken}`,
-        'Content-Type': 'application/json'
-      },
-    });
-
-
-    const data = await response.json();
-    console.log("Peak hours data:", data);
-
-    if (response.ok) {
-      const labels = data.peakOrderHours.map(item => item.slot);
-      const values = data.peakOrderHours.map(item => item.count);
-
-      setPeakOrderHoursData({
-        labels,
-        datasets: [
-          {
-            label: "Peak Order Hours",
-            data: values,
-            backgroundColor: "rgba(16, 185, 129, 0.5)",
-            borderColor: "rgba(16, 185, 129, 1)",
-            borderWidth: 1,
-          },
-        ],
-      });
-    } else {
-      console.error("Failed to fetch peak hours data:", data.message);
-    }
-  }
-
+  // Simulate live data updates
   useEffect(() => {
-    todaysTotalOrders();
-    getRevenueToday();
-    topSellingFood();
-    fetchOrdesPerDayData();
-    fetchPeakHoursData();
+    const liveStatsInterval = setInterval(() => {
+        setStats(prevStats => {
+            const getNextValue = (currentVal, variance, integer = true) => {
+                const change = (Math.random() - 0.45) * variance;
+                const newValue = currentVal + change;
+                return integer ? Math.max(0, Math.round(newValue)) : Math.max(0, newValue);
+            };
+
+            const newOrdersTrend = [...prevStats.trends.orders.slice(1), getNextValue(prevStats.trends.orders.at(-1), 10)];
+            const newRevenueTrend = [...prevStats.trends.revenue.slice(1), getNextValue(prevStats.trends.revenue.at(-1), 5000)];
+            const newCustomerVal = Math.random() > 0.95 ? prevStats.trends.customers.at(-1) + 1 : prevStats.trends.customers.at(-1);
+            const newCustomersTrend = [...prevStats.trends.customers.slice(1), newCustomerVal];
+            const newTopFoodTrend = [...prevStats.trends.topFood.slice(1), getNextValue(prevStats.trends.topFood.at(-1), 5)];
+
+            return {
+                ...prevStats,
+                todayOrders: newOrdersTrend.at(-1),
+                revenueToday: newRevenueTrend.at(-1),
+                newCustomers: newCustomersTrend.at(-1),
+                trends: {
+                    orders: newOrdersTrend,
+                    revenue: newRevenueTrend,
+                    customers: newCustomersTrend,
+                    topFood: newTopFoodTrend,
+                }
+            };
+        });
+    }, 2500);
+
+    return () => clearInterval(liveStatsInterval);
   }, []);
 
 
-  // const revenueTrendData = {
-  //   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-  //   datasets: [
-  //     {
-  //       label: "Revenue",
-  //       data: [4500, 5200, 4800, 6000],
-  //       fill: false,
-  //       backgroundColor: "rgba(245, 158, 11, 0.5)",
-  //       borderColor: "rgba(245, 158, 11, 1)",
-  //       tension: 0.1,
-  //     },
-  //   ],
-  // };
+  // --- CHART DATA AND OPTIONS ---
 
+  const chartColors = {
+    primary: '#8b5cf6',
+    primary_light: 'rgba(139, 92, 246, 0.1)',
+    primary_gradient_start: 'rgba(139, 92, 246, 0.4)',
+    primary_gradient_end: 'rgba(139, 92, 246, 0)',
+    green: '#10b981',
+    green_light: 'rgba(16, 185, 129, 0.1)',
+    blue: '#3b82f6',
+    blue_light: 'rgba(59, 130, 246, 0.1)',
+    pink: '#ec4899',
+    pink_light: 'rgba(236, 72, 153, 0.1)',
+    doughnut: ['#8b5cf6', '#34d399', '#60a5fa', '#f472b6', '#f59e0b'],
+    text: '#6b7280',
+    grid: 'rgba(229, 231, 235, 0.5)'
+  };
+  
+  const commonChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          color: chartColors.text,
+          font: { size: 12 },
+        },
+      },
+    },
+    scales: {
+      y: {
+        grid: { color: chartColors.grid },
+        ticks: { color: chartColors.text },
+      },
+      x: {
+        grid: { color: chartColors.grid },
+        ticks: { color: chartColors.text },
+      },
+    },
+  };
 
-  const renderNoData = (message) => (
-    <div className="flex flex-col items-center justify-center h-64">
-      <Player autoplay loop src={noDataAnimation} style={{ height: '150px', width: '150px' }} />
-      <p className="mt-2 text-gray-600 dark:text-gray-400">{message}</p>
-    </div>
-  );
+  const liveChartData = {
+    labels: liveData.map((_, i) => `${i + 1}s`),
+    datasets: [{
+      label: "Live Orders",
+      data: liveData,
+      borderColor: chartColors.primary,
+      backgroundColor: chartColors.primary_gradient_start,
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: chartColors.primary,
+      pointBorderColor: "#fff",
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+    }],
+  };
+  
+  const doughnutData = {
+    labels: ['Pizza', 'Burger', 'Pasta', 'Salad', 'Drinks'],
+    datasets: [{
+      data: [35, 25, 20, 15, 5],
+      backgroundColor: chartColors.doughnut,
+      borderColor: '#fff',
+      borderWidth: 4,
+      hoverBorderWidth: 6
+    }],
+  };
+  
+  const horizontalBarData = {
+    labels: ['6-9 AM', '9-12 PM', '12-3 PM', '3-6 PM', '6-9 PM', '9-12 AM'],
+    datasets: [{
+      label: 'Orders',
+      data: [20, 45, 60, 50, 75, 30],
+      backgroundColor: chartColors.doughnut,
+      borderRadius: 6
+    }],
+  };
+  
+  const areaChartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Monthly Orders',
+      data: [650, 590, 800, 810, 560, 550],
+      fill: true,
+      backgroundColor: chartColors.primary_gradient_start,
+      borderColor: chartColors.primary,
+      tension: 0.4,
+    }],
+  };
+
+  const radarData = {
+    labels: ['Breakfast', 'Lunch', 'Snacks', 'Dinner', 'Late Night'],
+    datasets: [{
+      label: 'Order Intensity',
+      data: [65, 90, 70, 85, 40],
+      backgroundColor: 'rgba(236, 72, 153, 0.2)',
+      borderColor: chartColors.pink,
+      pointBackgroundColor: chartColors.pink,
+      pointBorderColor: '#fff',
+      pointHoverRadius: 7,
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: chartColors.pink,
+    }],
+  };
+
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-semibold text-gray-900 mb-10 tracking-tight">
-        Dashboard Overview
-      </h1>
+    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6 transition hover:scale-[1.02] hover:shadow-xl">
-          <h3 className="text-sm font-medium text-gray-500">Today's Orders</h3>
-          <p className="text-3xl font-semibold text-gray-900 mt-2">{stats.todayOrders}</p>
+       
+        {/* METRIC CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg hover:shadow-purple-200/60 transition-all duration-300 p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Today's Orders</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{stats.todayOrders}</p>
+              </div>
+              <div className="p-3 rounded-full bg-purple-200/70">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              </div>
+            </div>
+            <div className="mt-4 h-16">
+              <MiniChart data={stats.trends.orders} strokeColor={chartColors.primary} fillColor={chartColors.primary_light} />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl shadow-lg hover:shadow-green-200/60 transition-all duration-300 p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Revenue Today</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">₹{stats.revenueToday.toLocaleString()}</p>
+              </div>
+              <div className="p-3 rounded-full bg-green-200/70">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+            </div>
+            <div className="mt-4 h-16">
+              <MiniChart data={stats.trends.revenue} strokeColor={chartColors.green} fillColor={chartColors.green_light} />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-lg hover:shadow-blue-200/60 transition-all duration-300 p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">New Customers</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{stats.newCustomers}</p>
+              </div>
+              <div className="p-3 rounded-full bg-blue-200/70">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </div>
+            </div>
+            <div className="mt-4 h-16">
+              <MiniChart data={stats.trends.customers} strokeColor={chartColors.blue} fillColor={chartColors.blue_light} />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-lg hover:shadow-pink-200/60 transition-all duration-300 p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Top Selling</p>
+                <p className="text-xl font-semibold text-gray-800 mt-2 truncate">{stats.topSellingFood}</p>
+              </div>
+              <div className="p-3 rounded-full bg-pink-200/70">
+                 <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+              </div>
+            </div>
+            <div className="mt-4 h-16">
+               <MiniChart data={stats.trends.topFood} strokeColor={chartColors.pink} fillColor={chartColors.pink_light} />
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6 transition hover:scale-[1.02] hover:shadow-xl">
-          <h3 className="text-sm font-medium text-gray-500">Revenue Today</h3>
-          <p className="text-3xl font-semibold text-gray-900 mt-2">₹{stats.revenueToday}</p>
+        {/* Live Orders Graph */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Live Orders Tracking</h2>
+            <span className="flex items-center px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+              <span className="w-2 h-2 mr-2 bg-purple-500 rounded-full animate-pulse"></span>
+              Live
+            </span>
+          </div>
+          <div className="h-64">
+            <Line data={liveChartData} options={{...commonChartOptions, plugins: { legend: { display: false }}}} />
+          </div>
         </div>
 
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6 transition hover:scale-[1.02] hover:shadow-xl">
-          <h3 className="text-sm font-medium text-gray-500">New Customers</h3>
-          <p className="text-3xl font-semibold text-gray-900 mt-2">{stats.newCustomers}</p>
-        </div>
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Food Popularity Doughnut */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Food Popularity</h2>
+            <div className="h-80">
+              <Doughnut data={doughnutData} options={{...commonChartOptions, cutout: '70%', plugins: {legend: {position: 'right'}}}} />
+            </div>
+          </div>
 
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6 transition hover:scale-[1.02] hover:shadow-xl">
-          <h3 className="text-sm font-medium text-gray-500">Top Selling Food</h3>
-          <p className="text-xl font-medium text-gray-800 mt-2 truncate">{stats.topSellingFood}</p>
-        </div>
-      </div>
+          {/* Peak Hours Horizontal Bar */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Peak Order Hours</h2>
+            <div className="h-80">
+              <Bar data={horizontalBarData} options={{...commonChartOptions, indexAxis: 'y', plugins: {legend: {display: false}}}} />
+            </div>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6">
-          <h3 className="text-lg font-medium text-gray-700 mb-4">Orders Per Day</h3>
-          {ordersPerDayData ? <Bar data={ordersPerDayData} /> : renderNoData("No order data available yet")}
-        </div>
-
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6">
-          <h3 className="text-lg font-medium text-gray-700 mb-4">Peak Order Hours</h3>
-          {peakOrderHoursData ? <Bar data={peakOrderHoursData} /> : renderNoData("No peak hour data available yet")}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-        <div className="rounded-3xl bg-white/80 backdrop-blur shadow-lg p-6">
-          <h3 className="text-lg font-medium text-gray-700 mb-4">Top Selling Foods</h3>
-          {foodPopularityData ? <Pie data={foodPopularityData} /> : renderNoData("No food sales data available yet")}
+          {/* Order Trends Area Chart */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Order Trends</h2>
+            <div className="h-80">
+              <Line data={areaChartData} options={{...commonChartOptions, plugins: {legend: {display: false}}}} />
+            </div>
+          </div>
+          
+          {/* Order Intensity Radar Chart */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Order Intensity by Meal Time</h2>
+            <div className="h-80">
+              <Radar data={radarData} options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  r: {
+                    angleLines: { color: chartColors.grid },
+                    grid: { color: chartColors.grid },
+                    pointLabels: { color: chartColors.text, font: {size: 14}},
+                    ticks: { display: false }
+                  }
+                }
+              }} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-
 export default Dashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useEffect } from "react";
-// import {
-//   Chart as ChartJS,
-//   CategoryScale,
-//   LinearScale,
-//   BarElement,
-//   Title,
-//   Tooltip,
-//   Legend,
-//   ArcElement,
-//   PointElement,
-//   LineElement,
-// } from "chart.js";
-// import { Bar, Pie, Line } from "react-chartjs-2";
-// import { Player } from '@lottiefiles/react-lottie-player';
-// import noDataAnimation from "../assets/no_animationData.json"
-// import { use } from "react";
-
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   BarElement,
-//   Title,
-//   Tooltip,
-//   Legend,
-//   ArcElement,
-//   PointElement,
-//   LineElement
-// );
-
-// const Dashboard = () => {
-//   const [stats, setStats] = useState({
-//     todayOrders: 0,
-//     revenueToday: 0,
-//     newCustomers: 8,
-//     topSellingFood: "Loading...",
-//   });
-
-//   const [ordersPerDayData, setOrdersPerDayData] = useState(null);
-//   const [peakOrderHoursData, setPeakOrderHoursData] = useState(null);
-//   const [foodPopularityData, setFoodPopularityData] = useState(null);
-
-//   const todaysTotalOrders = async () => {
-//     try {
-
-//       const adminToken = localStorage.getItem("adminToken");
-//       console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-//       // const reponse = await fetch("http://localhost:5000/api/v1/orders/todays-total-orders", {
-//       const reponse = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-total-orders", {
-//         method: "GET",
-//         credentials: "include",
-//         headers: {
-//           'Authorization': `Bearer ${adminToken}`,
-//           'Content-Type': 'application/json'
-//         },
-
-//       });
-
-//       const data = await reponse.json();
-//       console.log("Today's total orders:", data);
-
-//       if (reponse.ok) {
-//         setStats((prevStats) => ({
-//           ...prevStats,
-//           todayOrders: data.totalOrders,
-//         }));
-
-//       } else {
-//         console.error("Failed to fetch today's total orders:", data.message);
-//       }
-
-//     } catch (error) {
-//       console.error("Error fetching today's total orders:", error);
-//     }
-
-//   }
-
-//   const getRevenueToday = async () => {
-
-//     const adminToken = localStorage.getItem("adminToken");
-//     console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-//     try {
-//       // const response = await fetch("http://localhost:5000/api/v1/orders/todays-revenue", {
-//       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-revenue", {
-//         method: "GET",
-//         credentials: "include",
-//         headers: {
-//           'Authorization': `Bearer ${adminToken}`,
-//           'Content-Type': 'application/json'
-//         },
-//       });
-
-//       const data = await response.json();
-//       console.log("Today's revenue:", data);
-
-//       if (response.ok) {
-//         setStats((prevStats) => ({
-//           ...prevStats,
-//           revenueToday: data.totalRevenueSum,
-//         }));
-
-//       } else {
-//         console.error("Failed to fetch today's revenue:", data.message);
-//       }
-
-//     } catch (error) {
-//       console.error("Error fetching today's revenue:", error);
-//     }
-//   }
-
-//   const topSellingFood = async () => {
-//     try {
-
-//       const adminToken = localStorage.getItem("adminToken");
-//       console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-//       // const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
-//       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
-//         method: "GET",
-//         credentials: "include",
-//         headers: {
-//           'Authorization': `Bearer ${adminToken}`,
-//           'Content-Type': 'application/json'
-//         },
-//       });
-
-//       const data = await response.json();
-//       if (!data) {
-//         console.error("No data received from server");
-//       }
-//       console.log("Top selling food:", data);
-
-//       if (response.ok) {
-
-//         const labels = data.populatedFoods.map(item => item.foodName);
-//         const values = data.populatedFoods.map(item => item.quantity);
-
-//         console.log("Labels:", labels);
-//         console.log("Values:", values);
-
-//         setStats((prevStats) => ({
-//           ...prevStats,
-//           topSellingFood: labels[0] || "N/A",
-//         }));
-
-//         setFoodPopularityData({
-//           labels,
-//           datasets: [
-//             {
-//               label: "Orders",
-//               data: values,
-//               backgroundColor: [
-//                 "rgba(255, 99, 132, 0.5)",
-//                 "rgba(54, 162, 235, 0.5)",
-//                 "rgba(255, 206, 86, 0.5)",
-//                 "rgba(75, 192, 192, 0.5)",
-//                 "rgba(153, 102, 255, 0.5)",
-//                 "rgba(255, 159, 64, 0.5)",
-//               ],
-//               borderColor: [
-//                 "rgba(255, 99, 132, 1)",
-//                 "rgba(54, 162, 235, 1)",
-//                 "rgba(255, 206, 86, 1)",
-//                 "rgba(75, 192, 192, 1)",
-//                 "rgba(153, 102, 255, 1)",
-//                 "rgba(255, 159, 64, 1)",
-//               ],
-//               borderWidth: 1,
-//             },
-//           ],
-//         });
-
-//       } else {
-//         console.error("Failed to fetch top selling food:", data.message);
-//       }
-
-//     } catch (error) {
-//       console.error("Error fetching top selling food:", error);
-//     }
-//   }
-
-//   const fetchOrdesPerDayData = async () => {
-
-//     const adminToken = localStorage.getItem("adminToken");
-//     console.log('adminToken via todaysTotalOrders : ', adminToken)
-
-//     try {
-//       // const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
-//       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/orders-per-day", {
-//         method: "GET",
-//         credentials: "include",
-//         headers: {
-//           'Authorization': `Bearer ${adminToken}`,
-//           'Content-Type': 'application/json'
-//         },
-//       });
-
-//       const data = await response.json();
-//       console.log("Orders per day data:", data);
-
-//       if (response.ok) {
-//         const labels = data.ordersPerDay.map(item => item.date);
-//         const values = data.ordersPerDay.map(item => item.count);
-
-//         setOrdersPerDayData({
-//           labels,
-//           datasets: [
-//             {
-//               label: "Orders per Day",
-//               data: values,
-//               backgroundColor: "rgba(124, 58, 237, 0.5)",
-//               borderColor: "rgba(124, 58, 237, 1)",
-//               borderWidth: 1,
-//             },
-//           ],
-//         });
-//       } else {
-//         console.error("Failed to fetch orders per day data:", data.message);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching orders per day data:", error);
-
-//     }
-//   }
-
-//   const ordersData = {
-//     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-//     datasets: [
-//       {
-//         label: "Orders",
-//         data: [65, 59, 80, 81, 56, 55, 40],
-//         backgroundColor: "rgba(124, 58, 237, 0.5)",
-//         borderColor: "rgba(124, 58, 237, 1)",
-//         borderWidth: 1,
-//       },
-//     ],
-//   };
-
-
-
-
-//   const fetchPeakHoursData = async () => {
-//     const adminToken = localStorage.getItem("adminToken");
-//     console.log('adminToken via todaysTotalOrders : ', adminToken);
-
-//     // const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
-//     const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
-//       method: "GET",
-//       // credentials: "include",
-//       headers: {
-//         'Authorization': `Bearer ${adminToken}`,
-//         'Content-Type': 'application/json'
-//       },
-//     });
-
-
-//     const data = await response.json();
-//     console.log("Peak hours data:", data);
-
-//     if (response.ok) {
-//       const labels = data.peakOrderHours.map(item => item.slot);
-//       const values = data.peakOrderHours.map(item => item.count);
-
-//       setPeakOrderHoursData({
-//         labels,
-//         datasets: [
-//           {
-//             label: "Peak Order Hours",
-//             data: values,
-//             backgroundColor: "rgba(16, 185, 129, 0.5)",
-//             borderColor: "rgba(16, 185, 129, 1)",
-//             borderWidth: 1,
-//           },
-//         ],
-//       });
-//     } else {
-//       console.error("Failed to fetch peak hours data:", data.message);
-//     }
-//   }
-
-//   useEffect(() => {
-//     todaysTotalOrders();
-//     getRevenueToday();
-//     topSellingFood();
-//     fetchOrdesPerDayData();
-//     fetchPeakHoursData();
-//   }, []);
-
-
-//   // const revenueTrendData = {
-//   //   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-//   //   datasets: [
-//   //     {
-//   //       label: "Revenue",
-//   //       data: [4500, 5200, 4800, 6000],
-//   //       fill: false,
-//   //       backgroundColor: "rgba(245, 158, 11, 0.5)",
-//   //       borderColor: "rgba(245, 158, 11, 1)",
-//   //       tension: 0.1,
-//   //     },
-//   //   ],
-//   // };
-
-
-//   const renderNoData = (message) => (
-//     <div className="flex flex-col items-center justify-center h-64">
-//       <Player autoplay loop src={noDataAnimation} style={{ height: '150px', width: '150px' }} />
-//       <p className="mt-2 text-gray-600 dark:text-gray-400">{message}</p>
-//     </div>
-//   );
-
-//   return (
-//     <div className="p-6 bg-white">
-//       <h1 className="text-3xl font-bold text-black mb-6">
-//         Dashboard Overview
-//       </h1>
-
-//       {/* Stats Cards */}
-//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-//         {/* Today's Orders Card */}
-//         <div className="bg-white rounded-xl shadow-sm p-5 border-l-[5px] border-orange-400
-//                  transition-all duration-300 ease-out
-//                  hover:scale-[1.015] hover:shadow-md hover:border-orange-500
-//                  group relative overflow-hidden h-full">
-//           <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0
-//                    group-hover:opacity-100 transition-opacity duration-300"></div>
-//           <div className="relative z-10">
-//             <h3 className="text-base font-medium text-gray-600">Today's Orders</h3>
-//             <p className="text-2xl font-bold text-gray-800 mt-1">{stats.todayOrders}</p>
-//           </div>
-//           <div className="absolute bottom-3 right-3 text-orange-200 group-hover:text-orange-300 transition-colors">
-//             <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-//             </svg>
-//           </div>
-//         </div>
-
-//         {/* Revenue Today Card */}
-//         <div className="bg-white rounded-xl shadow-sm p-5 border-l-[5px] border-green-400
-//                  transition-all duration-300 ease-out
-//                  hover:scale-[1.015] hover:shadow-md hover:border-green-500
-//                  group relative overflow-hidden h-full">
-//           <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent opacity-0
-//                    group-hover:opacity-100 transition-opacity duration-300"></div>
-//           <div className="relative z-10">
-//             <h3 className="text-base font-medium text-gray-600">Revenue Today</h3>
-//             <p className="text-2xl font-bold text-gray-800 mt-1">₹{stats.revenueToday}</p>
-//           </div>
-//           <div className="absolute bottom-3 right-3 text-green-200 group-hover:text-green-300 transition-colors">
-//             <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-//             </svg>
-//           </div>
-//         </div>
-
-//         {/* New Customers Card */}
-//         <div className="bg-white rounded-xl shadow-sm p-5 border-l-[5px] border-blue-400
-//                  transition-all duration-300 ease-out
-//                  hover:scale-[1.015] hover:shadow-md hover:border-blue-500
-//                  group relative overflow-hidden h-full">
-//           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0
-//                    group-hover:opacity-100 transition-opacity duration-300"></div>
-//           <div className="relative z-10">
-//             <h3 className="text-base font-medium text-gray-600">New Customers</h3>
-//             <p className="text-2xl font-bold text-gray-800 mt-1">{stats.newCustomers}</p>
-//           </div>
-//           <div className="absolute bottom-3 right-3 text-blue-200 group-hover:text-blue-300 transition-colors">
-//             <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-//             </svg>
-//           </div>
-//         </div>
-
-//         {/* Top Selling Food Card */}
-//         <div className="bg-white rounded-xl shadow-sm p-5 border-l-[5px] border-purple-400
-//                  transition-all duration-300 ease-out
-//                  hover:scale-[1.015] hover:shadow-md hover:border-purple-500
-//                  group relative overflow-hidden h-full">
-//           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0
-//                    group-hover:opacity-100 transition-opacity duration-300"></div>
-//           <div className="relative z-10">
-//             <h3 className="text-base font-medium text-gray-600">Top Selling Food</h3>
-//             <p className="text-xl font-semibold text-gray-700 mt-1 line-clamp-2">{stats.topSellingFood}</p>
-//           </div>
-//           <div className="absolute bottom-3 right-3 text-purple-200 group-hover:text-purple-300 transition-colors">
-//             <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-//             </svg>
-//           </div>
-//         </div>
-//       </div>
-
-
-//       {/* Charts */}
-//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-//         <div className="bg-white rounded-lg shadow p-6">
-//           <h3 className="text-lg font-medium text-black mb-4">Orders Per Day</h3>
-//           {ordersPerDayData && ordersPerDayData.labels.length > 0
-//             ? <Bar data={ordersPerDayData} />
-//             : renderNoData("No order data available yet")}
-//         </div>
-//         <div className="bg-white rounded-lg shadow p-6">
-//           <h3 className="text-lg font-medium text-black mb-4">Peak Order Hours</h3>
-//           {peakOrderHoursData && peakOrderHoursData.labels.length > 0
-//             ? <Bar data={peakOrderHoursData} />
-//             : renderNoData("No peak hour data available yet")}
-//         </div>
-//       </div>
-
-//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//         <div className="bg-white rounded-lg shadow p-6">
-//           <h3 className="text-lg font-medium text-black mb-4">Top Selling Foods</h3>
-//           {foodPopularityData && foodPopularityData.labels.length > 0
-//             ? <Pie data={foodPopularityData} />
-//             : renderNoData("No food sales data available yet")}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-
-// export default Dashboard;
-
-
-
-
