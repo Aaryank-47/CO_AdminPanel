@@ -23,7 +23,7 @@ const Sidebar = () => {
     { path: "/order", icon: <ReceiptIcon />, label: "Orders" },
     { path: "/analytics", icon: <AnalyticsIcon />, label: "Analytics" },
     { path: "/feedback", icon: <FeedbackIcon />, label: "Feedback" },
-    { path: "/settings", icon: <SettingsIcon />, label: "Settings" },
+   // { path: "/settings", icon: <SettingsIcon />, label: "Settings" },
   ];
 
   const isActive = (path) => location.pathname === path;
