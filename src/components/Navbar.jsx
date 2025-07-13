@@ -112,49 +112,18 @@ const Navbar = () => {
 
                 {/* Profile dropdown - Enhanced Section */}
                 <div className="relative " ref={profileRef}>
-                  <button
-                    onClick={toggleProfileMenu}
+                  <Link
+                     to="/profile"
+                          onClick={() => setIsProfileOpen(false)}
                     className="flex items-center space-x-2 focus:outline-none group bg-white "
                   >
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-black to-blue-500 flex items-center justify-center text-white font-medium shadow-sm group-hover:ring-2 group-hover:ring-blue-200 transition-all duration-200">
                       {user.name?.charAt(0)?.toUpperCase() || "A"}
                     </div>
                     <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                  </button>
+                  </Link>
 
-                  {isProfileOpen && (
-                    <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white/95 backdrop-blur-sm ring-1 ring-black/5 overflow-hidden">
-                      <div className="py-1">
-                        <div className="px-4 py-3 border-b border-gray-100/50">
-                          <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                        </div>
-                        <Link
-                          to="/profile"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50/50 transition-colors"
-                        >
-                          <UserIcon className="h-5 w-5 mr-2 text-gray-400" />
-                          Your Profile
-                        </Link>
-                        <Link
-                          to="/settings"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50/50 transition-colors"
-                        >
-                          <Cog6ToothIcon className="h-5 w-5 mr-2 text-gray-400" />
-                          Settings
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full text-left px-4 py-3 text-sm text-gray-900 bg-white transition-colors border-t border-gray-100/50"
-                        >
-                          <PowerIcon className="h-5 w-5 mr-2 text-gray-400" />
-                          Sign out
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                
                 </div>
               </div>
             ) : (

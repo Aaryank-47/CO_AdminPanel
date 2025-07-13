@@ -54,7 +54,7 @@ const Sidebar = () => {
       className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 shadow-sm"
     >
       <img 
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Food_Network_logo.svg/640px-Food_Network_logo.svg.png" 
+        src="https://t3.ftcdn.net/jpg/02/41/30/72/360_F_241307210_MjjaJC3SJy2zJZ6B7bKGMRsKQbdwRSze.jpg" 
         alt="Canteen Logo"
         className="w-full h-full object-cover"
       />

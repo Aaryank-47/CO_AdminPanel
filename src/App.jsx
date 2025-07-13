@@ -11,7 +11,6 @@ import Food from "./pages/Food.jsx";
 import Order from "./pages/Order.jsx";
 import Analytics from "./pages/Analytics.jsx";
 import Feedback from "./pages/Feedback.jsx";
-import Settings from "./pages/Settings.jsx";
 import Notification from "./pages/Notification.jsx";
 import AdminProfile from "./pages/AdminProfile.jsx";
 import LoginPage from "./pages/Login.jsx"
@@ -60,11 +59,7 @@ const AppContent = () => {
               </PrivateRoute>
             } />
             
-            <Route path="/settings" element={
-              <PrivateRoute>
-                <Settings />
-              </PrivateRoute>
-            } />
+           
             
             <Route path="/notifications" element={
               <PrivateRoute>
