@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/admin/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },  
         credentials: 'include', // This handles cookies
         body: JSON.stringify(userData),
       });
