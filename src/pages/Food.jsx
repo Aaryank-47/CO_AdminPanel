@@ -245,7 +245,7 @@ const Food = () => {
     return { totalItems: foodItems.length, activeCount, inactiveCount, totalValue, priceDistribution: priceRanges };
   }, [foodItems]);
 
-  // --- CHART CONFIGURATIONS ---
+  // --- CHART CONFIGURATIONS ----
   const availabilityChartData = {
     labels: ['Active', 'Inactive'],
     datasets: [{ data: [menuStats.activeCount, menuStats.inactiveCount], backgroundColor: ['#10B981', '#EF4444'], borderColor: '#FFF', borderWidth: 4 }],
