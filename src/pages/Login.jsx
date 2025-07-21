@@ -56,18 +56,18 @@ const LoginPage = () => {
     }
   });
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const data = await loginMutation.mutateAsync(formData);
-    navigate('/');
-  } catch (error) {
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await loginMutation.mutateAsync(formData);
+      navigate('/');
+    } catch (error) {
+    }
+  };
 
   return (
     <div className=" h-full bg-white flex flex-col md:flex-row">
-      
+
       {/* 👈 Left side with Lottie animation + Animation from left */}
       <motion.div
         initial={{ x: -200, opacity: 0 }}
@@ -76,9 +76,9 @@ const handleSubmit = async (e) => {
         className="w-full h-full md:w-1/2 overflow-hidden bg-black flex items-center justify-center p-8 rounded-tl-[45px] rounded-br-[45px]"
       >
         <div className="max-w-md w-full">
-          <Lottie 
-            animationData={animationData} 
-            loop={true} 
+          <Lottie
+            animationData={animationData}
+            loop={true}
             className="w-full h-auto"
           />
           <div className="mt-6 text-center">
@@ -94,20 +94,20 @@ const handleSubmit = async (e) => {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8 }}
         className="w-full md:w-1/2 flex items-center justify-center p-8"
-      >   
-      
+      >
+
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-  <div className="flex justify-center mb-4">
-    <img
-      src="https://t3.ftcdn.net/jpg/02/41/30/72/360_F_241307210_MjjaJC3SJy2zJZ6B7bKGMRsKQbdwRSze.jpg"
-      alt="Admin Logo"
-      className="h-h-24 w-24 rounded-full object-cover border-2 border-gray-300 shadow-lg"
-    />
-  </div>
-  <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-  <p className="text-gray-600 mt-2">Sign in to your admin account</p>
-</div>
+            <div className="flex justify-center mb-4">
+              <img
+                src="https://t3.ftcdn.net/jpg/02/41/30/72/360_F_241307210_MjjaJC3SJy2zJZ6B7bKGMRsKQbdwRSze.jpg"
+                alt="Admin Logo"
+                className="h-h-24 w-24 rounded-full object-cover border-2 border-gray-300 shadow-lg"
+              />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
+            <p className="text-gray-600 mt-2">Sign in to your admin account</p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

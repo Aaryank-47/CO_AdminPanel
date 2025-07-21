@@ -17,11 +17,24 @@ const Food = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [currentFood, setCurrentFood] = useState({
-    _id: "", foodName: "", foodPrice: "", foodCategory: "", foodImage: null, foodDescription: "", isVeg: false, isActive: false
+    _id: "",
+    foodName: "",
+    foodPrice: "",
+    foodCategory: "",
+    foodImage: null,
+    foodDescription: "",
+    isVeg: false,
+    isActive: false
   });
 
   const [newFood, setNewFood] = useState({
-    foodName: "", foodPrice: "", foodCategory: "", foodImage: null, foodDescription: "", isVeg: false, isActive: true
+    foodName: "",
+    foodPrice: "",
+    foodCategory: "",
+    foodImage: null,
+    foodDescription: "",
+    isVeg: false,
+    isActive: true
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -34,7 +47,7 @@ const Food = () => {
     const file = e.target.files[0];
     if (file) {
       setNewFood({ ...newFood, foodImage: file });
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -49,7 +62,7 @@ const Food = () => {
     const file = e.target.files[0];
     if (file) {
       setCurrentFood({ ...currentFood, foodImage: file });
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -281,6 +294,26 @@ const Food = () => {
     setIsEditModalOpen(true);
   };
 
+  const handleAddFoodChange = (e) => {
+    const { name, value } = e.target;
+    setNewFood((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+
+
+  const handleEditFoodChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentFood((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+
+
   // --- DERIVED DATA FOR METRICS AND CHARTS ---
   const menuStats = useMemo(() => {
     const activeCount = foodItems.filter(item => item.isActive).length;
@@ -309,24 +342,24 @@ const Food = () => {
 
   // --- REUSABLE COMPONENTS ---
   const Modal = ({ isOpen, onClose, title, children, onConfirm, confirmText }) => {
-     if (!isOpen) return null;
-     return (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+    if (!isOpen) return null;
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto sm:m-4">
-            <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
+          <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
             <h3 className="text-lg sm:text-xl font-semibold text-slate-800">{title}</h3>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
-            </div>
-            <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">{children}</div>
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
-            <button type="button" onClick={onClose} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-800  ">Cancel</button>
+          </div>
+          <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">{children}</div>
+          <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
+            <button type="button" onClick={onClose} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-800  ">Cancel</button>
             <button type="button" onClick={onConfirm} className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">{confirmText}</button>
-            </div>
+          </div>
         </div>
-        </div>
-     );
+      </div>
+    );
   };
-  
+
   const SkeletonLoader = () => (
     <div className="animate-pulse p-4 sm:p-6 lg:p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -392,13 +425,13 @@ const Food = () => {
                   <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4">Item Availability</h3>
                     <div className="h-48 sm:h-64 flex items-center justify-center">
-                      <Doughnut data={availabilityChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } }}}}} />
+                      <Doughnut data={availabilityChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } } }} />
                     </div>
                   </div>
                   <div className="lg:col-span-3 bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4">Price Distribution</h3>
                     <div className="h-48 sm:h-64">
-                      <Bar data={priceChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } }}}}} />
+                      <Bar data={priceChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }} />
                     </div>
                   </div>
                 </section>
@@ -424,13 +457,13 @@ const Food = () => {
                             <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm text-slate-600">₹{item.price.toFixed(2)}</td>
                             <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm text-slate-600 hidden sm:table-cell">{item.category}</td>
                             <td className="px-4 py-3 sm:px-6 sm:py-4">
-                                <span 
-                                  onClick={() => toggleActiveStatus(item._id, item.isActive)} 
-                                  className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium cursor-pointer transition-colors duration-200 ${item.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
-                                >
-                                  {item.isActive ? "Active" : "Inactive"}
-                                </span>
-                              </td>
+                              <span
+                                onClick={() => toggleActiveStatus(item._id, item.isActive)}
+                                className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium cursor-pointer transition-colors duration-200 ${item.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
+                              >
+                                {item.isActive ? "Active" : "Inactive"}
+                              </span>
+                            </td>
                             <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm font-medium flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-4">
                               <button onClick={() => handleEditModalOpen(item)} className="text-black hover:text-black text-left sm:text-center bg-white border-black">Edit</button>
                               <button onClick={() => handleDeleteFood(item._id)} className="text-black hover:text-black text-left sm:text-center bg-white border-black  ">Delete</button>
@@ -447,21 +480,28 @@ const Food = () => {
         )}
       </div>
 
-      <Modal isOpen={isAddModalOpen} onClose={handleAddModalClose} title="Add New Food Item" onConfirm={handleAddFood} confirmText="Add Food">
-         <div className="space-y-3 sm:space-y-4">
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={handleAddModalClose}
+        title="Add New Food Item"
+        onConfirm={handleAddFood}
+        confirmText="Add Food"
+      >
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Food Name
             </label>
             <input
               type="text"
+              name="foodName"
               value={newFood.foodName}
-              onChange={(e) => setNewFood({ ...newFood, foodName: e.target.value })}
+              onChange={handleAddFoodChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
               placeholder="Enter food name"
               required
             />
-          </div> 
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
@@ -470,8 +510,9 @@ const Food = () => {
               </label>
               <input
                 type="number"
+                name="foodPrice"
                 value={newFood.foodPrice}
-                onChange={(e) => setNewFood({ ...newFood, foodPrice: e.target.value })}
+                onChange={handleAddFoodChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
                 placeholder="0.00"
                 required
@@ -484,8 +525,9 @@ const Food = () => {
                 Category
               </label>
               <select
+                name="foodCategory"
                 value={newFood.foodCategory}
-                onChange={(e) => setNewFood({ ...newFood, foodCategory: e.target.value })}
+                onChange={handleAddFoodChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
                 required
               >
@@ -504,8 +546,9 @@ const Food = () => {
               Description
             </label>
             <textarea
+              name="foodDescription"
               value={newFood.foodDescription}
-              onChange={(e) => setNewFood({ ...newFood, foodDescription: e.target.value })}
+              onChange={handleAddFoodChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
               placeholder="Optional description"
               rows="3"
@@ -516,6 +559,7 @@ const Food = () => {
             <div className="flex items-center">
               <input
                 type="checkbox"
+                name="isVeg"
                 id="isVeg"
                 checked={newFood.isVeg}
                 onChange={(e) => setNewFood({ ...newFood, isVeg: e.target.checked })}
@@ -529,6 +573,7 @@ const Food = () => {
               <input
                 type="checkbox"
                 id="isActive"
+                name="isActive"
                 checked={newFood.isActive}
                 onChange={(e) => setNewFood({ ...newFood, isActive: e.target.checked })}
                 className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
@@ -550,6 +595,7 @@ const Food = () => {
                 </span>
                 <input
                   type="file"
+                  name="foodImage"
                   onChange={handleImageChange}
                   className="sr-only"
                   accept="image/*"
@@ -561,9 +607,9 @@ const Food = () => {
             </div>
             {imagePreview && (
               <div className="mt-3">
-                <img 
-                  src={imagePreview} 
-                  alt="Preview" 
+                <img
+                  src={imagePreview}
+                  alt="Preview"
                   className="h-24 w-24 object-cover rounded-lg border border-gray-200"
                 />
               </div>
@@ -573,15 +619,17 @@ const Food = () => {
       </Modal>
 
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Food Item" onConfirm={handleEditFood} confirmText="Save Changes">
-          <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Food Name
             </label>
             <input
               type="text"
+              name="foodName"
               value={currentFood.foodName}
-              onChange={(e) => setCurrentFood({ ...currentFood, foodName: e.target.value })}
+              // onChange={(e) => setCurrentFood({ ...currentFood, foodName: e.target.value })}
+              onChange={handleEditFoodChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
               required
             />
@@ -594,8 +642,10 @@ const Food = () => {
               </label>
               <input
                 type="number"
+                name="foodPrice"
                 value={currentFood.foodPrice}
-                onChange={(e) => setCurrentFood({ ...currentFood, foodPrice: e.target.value })}
+                onChange={handleEditFoodChange}
+                // onChange={(e) => setCurrentFood({ ...currentFood, foodPrice: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
                 required
                 min="0"
@@ -607,8 +657,10 @@ const Food = () => {
                 Category
               </label>
               <select
+                name="foodCategory"
                 value={currentFood.foodCategory}
-                onChange={(e) => setCurrentFood({ ...currentFood, foodCategory: e.target.value })}
+                onChange={handleEditFoodChange}
+                // onChange={(e) => setCurrentFood({ ...currentFood, foodCategory: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
                 required
               >
@@ -626,8 +678,10 @@ const Food = () => {
               Description
             </label>
             <textarea
+              name="foodDescription"
               value={currentFood.foodDescription}
-              onChange={(e) => setCurrentFood({ ...currentFood, foodDescription: e.target.value })}
+              onChange={handleEditFoodChange}
+              // onChange={(e) => setCurrentFood({ ...currentFood, foodDescription: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
               rows="3"
             />
@@ -638,6 +692,7 @@ const Food = () => {
               <input
                 type="checkbox"
                 id="editIsVeg"
+                name="isVeg"
                 checked={currentFood.isVeg}
                 onChange={(e) => setCurrentFood({ ...currentFood, isVeg: e.target.checked })}
                 className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
@@ -650,6 +705,7 @@ const Food = () => {
               <input
                 type="checkbox"
                 id="editIsActive"
+                name="isActive"
                 checked={currentFood.isActive}
                 onChange={(e) => setCurrentFood({ ...currentFood, isActive: e.target.checked })}
                 className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
@@ -671,6 +727,7 @@ const Food = () => {
                 </span>
                 <input
                   type="file"
+                  name="foodImage"
                   onChange={handleEditImageChange}
                   className="sr-only"
                   accept="image/*"
@@ -984,7 +1041,7 @@ export default Food;
 //         </div>
 //      );
 //   };
-//   
+//
 //  const SkeletonLoader = () => (
 //     <div className="animate-pulse p-4 sm:p-6 lg:p-8">
 //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -1082,8 +1139,8 @@ export default Food;
 //                             <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm text-slate-600">₹{item.price.toFixed(2)}</td>
 //                             <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm text-slate-600 hidden sm:table-cell">{item.category}</td>
 //                             <td className="px-4 py-3 sm:px-6 sm:py-4">
-//                                 <span 
-//                                   onClick={() => toggleActiveStatus(item._id, item.isActive)} 
+//                                 <span
+//                                   onClick={() => toggleActiveStatus(item._id, item.isActive)}
 //                                   className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium cursor-pointer transition-colors duration-200 ${item.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
 //                                 >
 //                                   {item.isActive ? "Active" : "Inactive"}
@@ -1119,7 +1176,7 @@ export default Food;
 //               placeholder="Enter food name"
 //               required
 //             />
-//           </div> 
+//           </div>
 
 //           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 //             <div>
