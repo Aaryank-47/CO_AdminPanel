@@ -495,275 +495,303 @@ const Food = () => {
         )}
       </div>
 
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={handleAddModalClose}
-        title="Add New Food Item"
-        onConfirm={handleAddFood}
-        confirmText="Add Food"
-      >
-        <div className="space-y-3 sm:space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Food Name
-            </label>
-            <input
-              type="text"
-              name="foodName"
-              value={newFood.foodName}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-              placeholder="Enter food name"
-              required
-            />
-          </div>
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto sm:m-4">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-800">Add New Food Item</h3>
+              <button onClick={handleAddModalClose} className="text-slate-900 hover:text-red-600 text-2xl leading-none bg-white ">&times;</button>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (₹)
-              </label>
-              <input
-                type="number"
-                name="foodPrice"
-                value={newFood.foodPrice}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-                placeholder="0.00"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select
-                name="foodCategory"
-                value={newFood.foodCategory}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-                required
-              >
-                <option value="">Select category</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            {/* Modal Body (your original children from the Modal component) */}
+            <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-3 sm:space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Food Name
+                  </label>
+                  <input
+                    type="text"
+                    name="foodName"
+                    value={newFood.foodName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                    placeholder="Enter food name"
+                    required
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              name="foodDescription"
-              value={newFood.foodDescription}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-              placeholder="Optional description"
-              rows="3"
-            />
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="foodPrice"
+                      value={newFood.foodPrice}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                      placeholder="0.00"
+                      required
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="foodCategory"
+                      value={newFood.foodCategory}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                      required
+                    >
+                      <option value="">Select category</option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="isVeg"
-                id="isVeg"
-                checked={newFood.isVeg}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
-              />
-              <label htmlFor="isVeg" className="ml-2 block text-sm sm:text-base text-gray-700">
-                Vegetarian
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isActive"
-                name="isActive"
-                checked={newFood.isActive}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
-              />
-              <label htmlFor="isActive" className="ml-2 block text-sm sm:text-base text-gray-700">
-                Available
-              </label>
-            </div>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    name="foodDescription"
+                    value={newFood.foodDescription}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                    placeholder="Optional description"
+                    rows="3"
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Food Image
-            </label>
-            <div className="flex items-center">
-              <label className="cursor-pointer">
-                <span className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                  Choose File
-                </span>
-                <input
-                  type="file"
-                  name="foodImage"
-                  onChange={handleImageChange}
-                  className="sr-only"
-                  accept="image/*"
-                />
-              </label>
-              <span className="ml-2 text-sm text-gray-500">
-                {newFood.foodImage ? newFood.foodImage.name : "No file chosen"}
-              </span>
-            </div>
-            {imagePreview && (
-              <div className="mt-3">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="h-24 w-24 object-cover rounded-lg border border-gray-200"
-                />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="isVeg"
+                      id="isVeg"
+                      checked={newFood.isVeg}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                    />
+                    <label htmlFor="isVeg" className="ml-2 block text-sm sm:text-base text-gray-700">
+                      Vegetarian
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      name="isActive"
+                      checked={newFood.isActive}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                    />
+                    <label htmlFor="isActive" className="ml-2 block text-sm sm:text-base text-gray-700">
+                      Available
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Food Image
+                  </label>
+                  <div className="flex items-center">
+                    <label className="cursor-pointer">
+                      <span className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Choose File
+                      </span>
+                      <input
+                        type="file"
+                        name="foodImage"
+                        onChange={handleImageChange}
+                        className="sr-only"
+                        accept="image/*"
+                      />
+                    </label>
+                    <span className="ml-2 text-sm text-gray-500">
+                      {newFood.foodImage ? newFood.foodImage.name : "No file chosen"}
+                    </span>
+                  </div>
+                  {imagePreview && (
+                    <div className="mt-3">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-24 w-24 object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Modal Footer (your original confirm/cancel buttons) */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
+              <button type="button" onClick={handleAddModalClose} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-800">Cancel</button>
+              <button type="button" onClick={handleAddFood} className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">Add Food</button>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
 
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Food Item" onConfirm={handleEditFood} confirmText="Save Changes">
-        <div className="space-y-3 sm:space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Food Name
-            </label>
-            <input
-              type="text"
-              name="foodName"
-              value={currentFood.foodName}
-              // onChange={(e) => setCurrentFood({ ...currentFood, foodName: e.target.value })}
-              onChange={handleEditInputChange }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-              required
-            />
-          </div>
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto sm:m-4">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-800">Edit Food Item</h3>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-900 hover:text-red-600 text-2xl leading-none bg-white ">&times;</button>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (₹)
-              </label>
-              <input
-                type="number"
-                name="foodPrice"
-                value={currentFood.foodPrice}
-                onChange={handleEditInputChange }
-                // onChange={(e) => setCurrentFood({ ...currentFood, foodPrice: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select
-                name="foodCategory"
-                value={currentFood.foodCategory}
-                onChange={handleEditInputChange }
-                // onChange={(e) => setCurrentFood({ ...currentFood, foodCategory: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-                required
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            {/* Modal Body (your original children from the Modal component) */}
+            <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-3 sm:space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Food Name
+                  </label>
+                  <input
+                    type="text"
+                    name="foodName"
+                    value={currentFood.foodName}
+                    onChange={handleEditInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                    required
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              name="foodDescription"
-              value={currentFood.foodDescription}
-              onChange={handleEditInputChange }
-              // onChange={(e) => setCurrentFood({ ...currentFood, foodDescription: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
-              rows="3"
-            />
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="foodPrice"
+                      value={currentFood.foodPrice}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                      required
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="foodCategory"
+                      value={currentFood.foodCategory}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                      required
+                    >
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editIsVeg"
-                name="isVeg"
-                checked={currentFood.isVeg}
-                onChange={handleEditInputChange}
-                className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
-              />
-              <label htmlFor="editIsVeg" className="ml-2 block text-sm sm:text-base text-gray-700">
-                Vegetarian
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editIsActive"
-                name="isActive"
-                checked={currentFood.isActive}
-                onChange={handleEditInputChange}
-                className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
-              />
-              <label htmlFor="editIsActive" className="ml-2 block text-sm sm:text-base text-gray-700">
-                Available
-              </label>
-            </div>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    name="foodDescription"
+                    value={currentFood.foodDescription}
+                    onChange={handleEditInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-black"
+                    rows="3"
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Food Image
-            </label>
-            <div className="flex items-center">
-              <label className="cursor-pointer">
-                <span className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                  Change Image
-                </span>
-                <input
-                  type="file"
-                  name="foodImage"
-                  onChange={handleEditImageChange}
-                  className="sr-only"
-                  accept="image/*"
-                />
-              </label>
-              <span className="ml-2 text-sm text-gray-500">
-                {currentFood.foodImage instanceof File ? currentFood.foodImage.name : "Current image"}
-              </span>
-            </div>
-            {(editImagePreview || currentFood.foodImage) && (
-              <div className="mt-3">
-                <img
-                  src={editImagePreview || currentFood.foodImage}
-                  alt="Current food"
-                  className="h-24 w-24 object-cover rounded-lg border border-gray-200"
-                />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="editIsVeg"
+                      name="isVeg"
+                      checked={currentFood.isVeg}
+                      onChange={handleEditInputChange}
+                      className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                    />
+                    <label htmlFor="editIsVeg" className="ml-2 block text-sm sm:text-base text-gray-700">
+                      Vegetarian
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="editIsActive"
+                      name="isActive"
+                      checked={currentFood.isActive}
+                      onChange={handleEditInputChange}
+                      className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                    />
+                    <label htmlFor="editIsActive" className="ml-2 block text-sm sm:text-base text-gray-700">
+                      Available
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Food Image
+                  </label>
+                  <div className="flex items-center">
+                    <label className="cursor-pointer">
+                      <span className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Change Image
+                      </span>
+                      <input
+                        type="file"
+                        name="foodImage"
+                        onChange={handleEditImageChange}
+                        className="sr-only"
+                        accept="image/*"
+                      />
+                    </label>
+                    <span className="ml-2 text-sm text-gray-500">
+                      {currentFood.foodImage instanceof File ? currentFood.foodImage.name : "Current image"}
+                    </span>
+                  </div>
+                  {(editImagePreview || currentFood.foodImage) && (
+                    <div className="mt-3">
+                      <img
+                        src={editImagePreview || currentFood.foodImage}
+                        alt="Current food"
+                        className="h-24 w-24 object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Modal Footer (your original confirm/cancel buttons) */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-800">Cancel</button>
+              <button type="button" onClick={handleEditFood} className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">Save Changes</button>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </div>
   );
 };
