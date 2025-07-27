@@ -356,24 +356,24 @@ const Food = () => {
   };
 
   // --- REUSABLE COMPONENTS ---
-  const Modal = ({ isOpen, onClose, title, children, onConfirm, confirmText }) => {
-    if (!isOpen) return null;
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto sm:m-4">
-          <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
-            <h3 className="text-lg sm:text-xl font-semibold text-slate-800">{title}</h3>
-            <button onClick={onClose} className="text-slate-900 hover:text-red-600 text-2xl leading-none bg-white ">&times;</button>
-          </div>
-          <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">{children}</div>
-          <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
-            <button type="button" onClick={onClose} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-800  ">Cancel</button>
-            <button type="button" onClick={onConfirm} className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">{confirmText}</button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // const Modal = ({ isOpen, onClose, title, children, onConfirm, confirmText }) => {
+  //   if (!isOpen) return null;
+  //   return (
+  //     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+  //       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto sm:m-4">
+  //         <div className="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center">
+  //           <h3 className="text-lg sm:text-xl font-semibold text-slate-800">{title}</h3>
+  //           <button onClick={onClose} className="text-slate-900 hover:text-red-600 text-2xl leading-none bg-white ">&times;</button>
+  //         </div>
+  //         <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">{children}</div>
+  //         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 sm:space-x-3 rounded-b-2xl">
+  //           <button type="button" onClick={onClose} className="px-3 py-1.5 sm:px-4 sm:py-2 text-white border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-800  ">Cancel</button>
+  //           <button type="button" onClick={onConfirm} className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">{confirmText}</button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const SkeletonLoader = () => (
     <div className="animate-pulse p-4 sm:p-6 lg:p-8">
@@ -494,6 +494,7 @@ const Food = () => {
           </>
         )}
       </div>
+
 
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
