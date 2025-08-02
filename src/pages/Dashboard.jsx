@@ -237,45 +237,48 @@ const Dashboard = () => {
   };
 
   const fetchPeakHoursData = async () => {
-    try {
-      const adminToken = localStorage.getItem("adminToken");
-      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        },
+  try {
+    const adminToken = localStorage.getItem("adminToken");
+    const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+    const data = await response.json();
+    console.log("Peak hours data:", data); // Debug log
+    if (response.ok && data.peakOrderHours) {
+      const labels =  data.peakOrderHours.map(item => `${item.slot}:00`);
+      const values = data.peakOrderHours.map(item => item.count);
+
+      setPeakOrderHoursData({
+        labels,
+        datasets: [
+          {
+            label: "Orders",
+            data: values,
+            backgroundColor: [
+              "rgba(139, 92, 246, 0.7)",
+              "rgba(16, 185, 129, 0.7)",
+              "rgba(59, 130, 246, 0.7)",
+              "rgba(236, 72, 153, 0.7)",
+              "rgba(245, 158, 11, 0.7)",
+              "rgba(99, 102, 241, 0.7)",
+            ],
+            borderRadius: 6,
+          },
+        ],
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        const labels = data.peakHours.map(item => `${item.hour}:00`);
-        const values = data.peakHours.map(item => item.count);
-
-        setPeakOrderHoursData({
-          labels,
-          datasets: [
-            {
-              label: "Orders",
-              data: values,
-              backgroundColor: [
-                "rgba(139, 92, 246, 0.7)",
-                "rgba(16, 185, 129, 0.7)",
-                "rgba(59, 130, 246, 0.7)",
-                "rgba(236, 72, 153, 0.7)",
-                "rgba(245, 158, 11, 0.7)",
-                "rgba(99, 102, 241, 0.7)",
-              ],
-              borderRadius: 6,
-            },
-          ],
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching peak hours data:", error);
+    } else {
+      console.error("Invalid peak hours data format:", data);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching peak hours data:", error);
+  }
+};
 
   useEffect(() => {
     todaysTotalOrders();
@@ -504,14 +507,44 @@ const Dashboard = () => {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Peak Order Hours</h2>
             <div className="h-80">
-              {peakOrderHoursData ? (
-                <Bar data={horizontalBarData} options={{...commonChartOptions, indexAxis: 'y', plugins: {legend: {display: false}}}} />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Player autoplay loop src={noDataAnimation} style={{ height: '200px', width: '200px' }} />
-                </div>
-              )}
-            </div>
+    {peakOrderHoursData ? (
+      <Bar 
+        data={peakOrderHoursData} 
+        options={{
+          ...commonChartOptions, 
+          indexAxis: 'y',
+          plugins: {
+            ...commonChartOptions.plugins,
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: chartColors.grid
+              },
+              ticks: {
+                color: chartColors.text
+              }
+            },
+            y: {
+              grid: {
+                color: chartColors.grid
+              },
+              ticks: {
+                color: chartColors.text
+              }
+            }
+          }
+        }} 
+      />
+    ) : (
+      <div className="flex items-center justify-center h-full">
+        <Player autoplay loop src={noDataAnimation} style={{ height: '200px', width: '200px' }} />
+      </div>
+    )}
+  </div>
           </div>
 
           {/* Order Trends Area Chart */}

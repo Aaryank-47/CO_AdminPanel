@@ -39,7 +39,7 @@ const Order = () => {
   const [orders, setOrders] = useState({
     today: [],
     month: [],
-    year: []
+    // year: []
   });
 
   const [dateFilter, setDateFilter] = useState({
@@ -48,10 +48,10 @@ const Order = () => {
       start: new Date(new Date().setDate(1)),
       end: new Date()
     },
-    year: {
-      start: new Date(new Date().getFullYear(), 0, 1),
-      end: new Date()
-    }
+    // year: {
+    //   start: new Date(new Date().getFullYear(), 0, 1),
+    //   end: new Date()
+    // }
   });
 
   useEffect(() => {
@@ -76,19 +76,31 @@ const Order = () => {
         }
 
         const data = await response.json();
+        if(!data.success) {
+          throw new Error(data.message || 'Failed to fetch orders');
+        }
+        console.log("Fetched orders:", data);
 
         if (data.success && data.orders) {
           const today = new Date();
-          const todayStart = new Date(today.setHours(0, 0, 0, 0));
+          today.setHours(0, 0, 0, 0);
+          const todayEnd = new Date();
+          todayEnd.setHours(23, 59, 59, 999);
+
+          // Calculate date 30 days ago
+          const monthAgo = new Date();
+          monthAgo.setDate(monthAgo.getDate() - 30);
+          monthAgo.setHours(0, 0, 0, 0);
 
           const categorized = {
-            today: data.orders.filter(order =>
-              new Date(order.createdAt) >= todayStart
-            ),
-            month: data.orders.filter(order =>
-              new Date(order.createdAt) >= new Date(new Date().setDate(1))
-            ),
-            year: data.orders
+            today: data.orders.filter(order => {
+              const orderDate = new Date(order.createdAt);
+              return orderDate >= today && orderDate <= todayEnd;
+            }),
+            month: data.orders.filter(order => {
+              const orderDate = new Date(order.createdAt);
+              return orderDate >= monthAgo && orderDate <= todayEnd;
+            })
           };
 
           setOrders(categorized);
@@ -171,6 +183,10 @@ const Order = () => {
       }
 
       const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update order status');
+      }
+      console.log("Update response:", data);
 
       if (data.success) {
         setOrders(prev => {
@@ -181,7 +197,7 @@ const Order = () => {
           return {
             today: updateOrderArray(prev.today),
             month: updateOrderArray(prev.month),
-            year: updateOrderArray(prev.year)
+            // year: updateOrderArray(prev.year)
           };
         });
 
@@ -515,7 +531,7 @@ const Order = () => {
             Monthly Orders
           </button>
 
-          <button
+          {/* <button
             onClick={() => { setActiveTab("year"); setCurrentPage(0); }}
             className={`px-4 py-2 text-sm font-medium ${activeTab === "year"
               ? darkMode
@@ -527,7 +543,7 @@ const Order = () => {
               }`}
           >
             Yearly Orders
-          </button>
+          </button> */}
         </div>
 
         {/* Date Filter */}
