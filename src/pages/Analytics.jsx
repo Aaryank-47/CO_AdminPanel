@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,6 +33,179 @@ const Analytics = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 7)));
   const [endDate, setEndDate] = useState(new Date());
+  const [peakOrderHoursData, setPeakOrderHoursData] = useState({
+    labels: [],
+    datasets: [],
+  });
+  const [foodPopularityData, setFoodPopularityData] = useState({
+    labels: [],
+    datasets: [],
+  });
+  const [revenueTrendData, setRevenueTrendData] = useState({
+    labels: [],
+    datasets: [],
+  });
+  const [stats, setStats] = useState({
+    topSellingFood: "Loading...",
+    trends: {
+      topFood: [0, 0, 0, 0, 0, 0],
+    },
+  })
+
+  const topSellingFood = async () => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        const labels = data.populatedFoods.map(item => item.foodName);
+        const values = data.populatedFoods.map(item => item.quantity);
+
+        setStats((prevStats) => ({
+          ...prevStats,
+          topSellingFood: labels[0] || "N/A",
+          trends: {
+            ...prevStats.trends,
+            topFood: [...prevStats.trends.topFood.slice(1), values[0] || 0],
+          },
+        }));
+
+        setFoodPopularityData({
+          labels,
+          datasets: [
+            {
+              label: "Orders",
+              data: values,
+              backgroundColor: [
+                darkMode ? "rgba(239, 68, 68, 0.7)" : "rgba(239, 68, 68, 0.5)",
+                darkMode ? "rgba(59, 130, 246, 0.7)" : "rgba(59, 130, 246, 0.5)",
+                darkMode ? "rgba(234, 179, 8, 0.7)" : "rgba(234, 179, 8, 0.5)",
+                darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
+                darkMode ? "rgba(139, 92, 246, 0.7)" : "rgba(139, 92, 246, 0.5)",
+              ],
+              borderColor: [
+                "rgba(239, 68, 68, 1)",
+                "rgba(59, 130, 246, 1)",
+                "rgba(234, 179, 8, 1)",
+                "rgba(16, 185, 129, 1)",
+                "rgba(139, 92, 246, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching top selling food:", error);
+    }
+  };
+
+
+  const fetchpeakOrderHoursData = async () => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const data = await response.json();
+      console.log("Peak hours data:", data); // Debug log
+      if (response.ok && data.peakOrderHours) {
+        const labels = data.peakOrderHours.map(item => `${item.slot}:00`);
+        const values = data.peakOrderHours.map(item => item.count);
+
+        setPeakOrderHoursData({
+          labels,
+          datasets: [
+            {
+              label: "Orders",
+              data: values,
+              backgroundColor: darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
+              borderColor: "rgba(16, 185, 129, 1)",
+              borderWidth: 1,
+              borderRadius: 4,
+            },
+          ],
+        });
+      } else {
+        console.error("Invalid peak hours data format:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching peak hours data:", error);
+    }
+  };
+
+  const fetchRevenueTrendData = async () => {
+    const adminToken = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/orders/weekly-revenues-of-month", {
+        // const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-revenues-of-month", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const data = await response.json();
+      if (!data || !data.revenues) {
+        console.error("Invalid revenue trend data format:", data.message);
+        return;
+      }
+      console.log("Revenue trend data:", data); // Debug log
+
+      if (response.ok) {
+        const labels = data.revenues.map(item => item.week);
+        const values = data.revenues.map(item => item.totalRevenue);
+
+        setRevenueTrendData({
+          labels,
+          datasets: [
+            {
+              label: "Revenue ($)",
+              data: values,
+              fill: false,
+              backgroundColor: "rgba(245, 158, 11, 0.5)",
+              borderColor: "rgba(245, 158, 11, 1)",
+              tension: 0.3,
+              pointBackgroundColor: "rgba(245, 158, 11, 1)",
+              pointBorderColor: darkMode ? "#1e293b" : "#fff",
+              pointHoverRadius: 6,
+              pointRadius: 4,
+              borderWidth: 2,
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching revenue trend data:", error);
+    }
+  }
+
+
+
+
+
+  useEffect(() => {
+    topSellingFood();
+    fetchRevenueTrendData();
+    fetchpeakOrderHoursData();
+  }, [])
+
 
   // Sample data
   const salesData = {
@@ -49,72 +222,74 @@ const Analytics = () => {
     ],
   };
 
-  const foodPopularityData = {
-    labels: ["Burger", "Pizza", "Sandwich", "Pasta", "Salad"],
-    datasets: [
-      {
-        label: "Orders",
-        data: [35, 25, 20, 15, 5],
-        backgroundColor: [
-          darkMode ? "rgba(239, 68, 68, 0.7)" : "rgba(239, 68, 68, 0.5)",
-          darkMode ? "rgba(59, 130, 246, 0.7)" : "rgba(59, 130, 246, 0.5)",
-          darkMode ? "rgba(234, 179, 8, 0.7)" : "rgba(234, 179, 8, 0.5)",
-          darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
-          darkMode ? "rgba(139, 92, 246, 0.7)" : "rgba(139, 92, 246, 0.5)",
-        ],
-        borderColor: [
-          "rgba(239, 68, 68, 1)",
-          "rgba(59, 130, 246, 1)",
-          "rgba(234, 179, 8, 1)",
-          "rgba(16, 185, 129, 1)",
-          "rgba(139, 92, 246, 1)",
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+  // const foodPopularityData = {
+  //   labels: ["Burger", "Pizza", "Sandwich", "Pasta", "Salad"],
+  //   datasets: [
+  //     {
+  //       label: "Orders",
+  //       data: [35, 25, 20, 15, 5],
+  //       backgroundColor: [
+  //         darkMode ? "rgba(239, 68, 68, 0.7)" : "rgba(239, 68, 68, 0.5)",
+  //         darkMode ? "rgba(59, 130, 246, 0.7)" : "rgba(59, 130, 246, 0.5)",
+  //         darkMode ? "rgba(234, 179, 8, 0.7)" : "rgba(234, 179, 8, 0.5)",
+  //         darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
+  //         darkMode ? "rgba(139, 92, 246, 0.7)" : "rgba(139, 92, 246, 0.5)",
+  //       ],
+  //       borderColor: [
+  //         "rgba(239, 68, 68, 1)",
+  //         "rgba(59, 130, 246, 1)",
+  //         "rgba(234, 179, 8, 1)",
+  //         "rgba(16, 185, 129, 1)",
+  //         "rgba(139, 92, 246, 1)",
+  //       ],
+  //       borderWidth: 1,
+  //     },
+  //   ],
+  // };
 
-  const revenueTrendData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Revenue ($)",
-        data: [4500, 5200, 4800, 6000],
-        fill: false,
-        backgroundColor: "rgba(245, 158, 11, 0.5)",
-        borderColor: "rgba(245, 158, 11, 1)",
-        tension: 0.3,
-        pointBackgroundColor: "rgba(245, 158, 11, 1)",
-        pointBorderColor: darkMode ? "#1e293b" : "#fff",
-        pointHoverRadius: 6,
-        pointRadius: 4,
-        borderWidth: 2,
-      },
-    ],
-  };
 
-  const peakHoursData = {
-    labels: [
-      "8-9 AM",
-      "9-10 AM",
-      "10-11 AM",
-      "11-12 PM",
-      "12-1 PM",
-      "1-2 PM",
-      "2-3 PM",
-      "3-4 PM",
-    ],
-    datasets: [
-      {
-        label: "Orders",
-        data: [10, 25, 35, 45, 60, 40, 30, 20],
-        backgroundColor: darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
-        borderColor: "rgba(16, 185, 129, 1)",
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-    ],
-  };
+
+  // const revenueTrendData = {
+  //   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+  //   datasets: [
+  //     {
+  //       label: "Revenue ($)",
+  //       data: [4500, 5200, 4800, 6000],
+  //       fill: false,
+  //       backgroundColor: "rgba(245, 158, 11, 0.5)",
+  //       borderColor: "rgba(245, 158, 11, 1)",
+  //       tension: 0.3,
+  //       pointBackgroundColor: "rgba(245, 158, 11, 1)",
+  //       pointBorderColor: darkMode ? "#1e293b" : "#fff",
+  //       pointHoverRadius: 6,
+  //       pointRadius: 4,
+  //       borderWidth: 2,
+  //     },
+  //   ],
+  // };
+
+  // const peakHoursData = {
+  //   labels: [
+  //     "8-9 AM",
+  //     "9-10 AM",
+  //     "10-11 AM",
+  //     "11-12 PM",
+  //     "12-1 PM",
+  //     "1-2 PM",
+  //     "2-3 PM",
+  //     "3-4 PM",
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: "Orders",
+  //       data: [10, 25, 35, 45, 60, 40, 30, 20],
+  //       backgroundColor: darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
+  //       borderColor: "rgba(16, 185, 129, 1)",
+  //       borderWidth: 1,
+  //       borderRadius: 4,
+  //     },
+  //   ],
+  // };
 
   // Chart options with dark mode support
   const chartOptions = {
@@ -193,16 +368,16 @@ const Analytics = () => {
               Insights and performance metrics
             </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3">
-            <button 
+            <button
               onClick={() => setDarkMode(!darkMode)}
               className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 text-amber-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} transition-colors`}
               aria-label="Toggle dark mode"
             >
               {darkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
             </button>
-            
+
             {/* Date Range Picker */}
             <div className={`flex items-center gap-2 border ${darkMode ? 'border-gray-700' : 'border-gray-300'} rounded-lg p-2`}>
               <FiCalendar className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -227,7 +402,7 @@ const Analytics = () => {
                 className={`bg-transparent ${darkMode ? 'text-white' : 'text-gray-900'} w-28 focus:outline-none`}
               />
             </div>
-            
+
             <div className="relative">
               <select
                 value={timeRange}
@@ -239,11 +414,11 @@ const Analytics = () => {
                 <option value="month">This Month</option>
                 <option value="custom">Custom Range</option>
               </select>
-              <FiChevronDown 
-                className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} 
+              <FiChevronDown
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
               />
             </div>
-            
+
             <button className={`flex items-center gap-2 px-4 py-2 rounded-lg ${darkMode ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-500 hover:bg-purple-600'} text-white transition-colors`}>
               <FiDownload size={18} />
               <span>Export</span>
@@ -266,7 +441,7 @@ const Analytics = () => {
               <div className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600" style={{ width: '72%' }}></div>
             </div>
           </div>
-          
+
           <div className={`p-5 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow transition-all hover:shadow-md`}>
             <div className="flex items-center justify-between">
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Orders</h3>
@@ -280,7 +455,7 @@ const Analytics = () => {
               <div className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600" style={{ width: '65%' }}></div>
             </div>
           </div>
-          
+
           <div className={`p-5 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow transition-all hover:shadow-md`}>
             <div className="flex items-center justify-between">
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avg. Order Value</h3>
@@ -294,7 +469,7 @@ const Analytics = () => {
               <div className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" style={{ width: '58%' }}></div>
             </div>
           </div>
-          
+
           <div className={`p-5 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow transition-all hover:shadow-md`}>
             <div className="flex items-center justify-between">
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Customer Satisfaction</h3>
@@ -327,7 +502,7 @@ const Analytics = () => {
               <Bar data={salesData} options={chartOptions} />
             </div>
           </div>
-          
+
           {/* Food Popularity */}
           <div className={`p-5 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow transition-all hover:shadow-md`}>
             <div className="flex items-center justify-between mb-5">
@@ -362,7 +537,7 @@ const Analytics = () => {
               <Line data={revenueTrendData} options={chartOptions} />
             </div>
           </div>
-          
+
           {/* Peak Order Hours */}
           <div className={`p-5 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow transition-all hover:shadow-md`}>
             <div className="flex items-center justify-between mb-5">
@@ -375,7 +550,7 @@ const Analytics = () => {
               <span className={`px-3 py-1 text-xs rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'}`}>Daily Average</span>
             </div>
             <div className="h-80">
-              <Bar data={peakHoursData} options={chartOptions} />
+              <Bar data={peakOrderHoursData} options={chartOptions} />
             </div>
           </div>
         </div>
