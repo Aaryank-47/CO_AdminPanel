@@ -151,7 +151,8 @@ const Order = () => {
     const fetchLast30DaysOrders = async () => {
       const adminToken = localStorage.getItem("adminToken");
       try {
-        const response = await fetch("http://localhost:5000/api/v1/orders/last-30-days-orders", {
+        // const response = await fetch("http://localhost:5000/api/v1/orders/last-30-days-orders", {
+        const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/last-30-days-orders", {
           method: "GET",
           headers: {
             'Authorization': `Bearer ${adminToken}`,

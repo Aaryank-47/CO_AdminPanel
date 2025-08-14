@@ -31,6 +31,7 @@ const SignupPage = () => {
   // Fetch colleges list with React Query
   const collegesQuery = useMutation({
     mutationFn: async () => {
+      // const response = await fetch("http://localhost:5000/api/v1/colleges/all-colleges");
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/colleges/all-colleges");
       if (!response.ok) {
         throw new Error("Failed to fetch colleges");
