@@ -77,6 +77,7 @@ const Food = () => {
     const adminId = localStorage.getItem('adminId');
     setIsLoading(true);
     try {
+      // const response = await fetch(`http://localhost:5000/api/v1/foods/canteens-menu/${adminId}`);
       const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/canteens-menu/${adminId}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -103,6 +104,7 @@ const Food = () => {
 
   const toggleActiveStatus = async (foodId, currentStatus) => {
     try {
+      // const response = await fetch(`http://localhost:5000/api/v1/foods/toggle-active/${foodId}`, {
       const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/toggle-active/${foodId}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -142,6 +144,7 @@ const Food = () => {
     }
 
     try {
+      // const response = await fetch('http://localhost:5000/api/v1/foods/create', {
       const response = await fetch('https://canteen-order-backend.onrender.com/api/v1/foods/create', {
         method: 'POST',
         credentials: 'include',
@@ -193,6 +196,7 @@ const Food = () => {
         formData.append('foodImage', currentFood.foodImage);
       }
 
+      // const response = await fetch(`http://localhost:5000/api/v1/foods/update/${currentFood._id}`, {
       const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/update/${currentFood._id}`, {
         method: 'PUT',
         credentials: 'include',
@@ -234,6 +238,7 @@ const Food = () => {
   const handleDeleteFood = async (id) => {
     if (window.confirm("Are you sure you want to delete this food item?")) {
       try {
+        // const response = await fetch(`http://localhost:5000/api/v1/foods/delete/${id}`, {
         const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/foods/delete/${id}`, {
           method: 'DELETE',
           credentials: 'include',

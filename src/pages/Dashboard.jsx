@@ -90,6 +90,7 @@ const Dashboard = () => {
   const todaysTotalOrders = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/todays-total-orders", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-total-orders", {
         method: "GET",
         credentials: "include",
@@ -118,6 +119,7 @@ const Dashboard = () => {
   const getRevenueToday = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/todays-revenue", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/todays-revenue", {
         method: "GET",
         credentials: "include",
@@ -146,6 +148,7 @@ const Dashboard = () => {
   const topSellingFood = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
         method: "GET",
         credentials: "include",
@@ -204,6 +207,7 @@ const Dashboard = () => {
   const fetchOrdersPerDayData = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/orders-per-day", {
         method: "GET",
         credentials: "include",
@@ -239,6 +243,7 @@ const Dashboard = () => {
   const fetchPeakHoursData = async () => {
   try {
     const adminToken = localStorage.getItem("adminToken");
+    // const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
     const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
       method: "GET",
       credentials: "include",

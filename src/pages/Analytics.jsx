@@ -45,16 +45,24 @@ const Analytics = () => {
     labels: [],
     datasets: [],
   });
+  const [weeklysalesData, setWeeklySalesData] = useState({
+    labels: [],
+    datasets: [],
+  });
   const [stats, setStats] = useState({
     topSellingFood: "Loading...",
     trends: {
+      totalEarnings: 0,
+      totalOrders: 0,
       topFood: [0, 0, 0, 0, 0, 0],
+      avgOrderValue: 0,
     },
   })
 
   const topSellingFood = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/foods/top-selling-food", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/foods/top-selling-food", {
         method: "GET",
         credentials: "include",
@@ -112,6 +120,7 @@ const Analytics = () => {
   const fetchpeakOrderHoursData = async () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/peak-order-hours", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/peak-order-hours", {
         method: "GET",
         credentials: "include",
@@ -151,8 +160,8 @@ const Analytics = () => {
   const fetchRevenueTrendData = async () => {
     const adminToken = localStorage.getItem("adminToken");
     try {
-      const response = await fetch("http://localhost:5000/api/v1/orders/weekly-revenues-of-month", {
-        // const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-revenues-of-month", {
+      // const response = await fetch("http://localhost:5000/api/v1/orders/weekly-revenues-of-month", {
+        const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-revenues-of-month", {
         method: "GET",
         credentials: "include",
         headers: {
@@ -166,7 +175,7 @@ const Analytics = () => {
         console.error("Invalid revenue trend data format:", data.message);
         return;
       }
-      console.log("Revenue trend data:", data); // Debug log
+      console.log("Revenue trend data:", data);
 
       if (response.ok) {
         const labels = data.revenues.map(item => item.week);
@@ -176,7 +185,7 @@ const Analytics = () => {
           labels,
           datasets: [
             {
-              label: "Revenue ($)",
+              label: "Revenue (₹)",
               data: values,
               fill: false,
               backgroundColor: "rgba(245, 158, 11, 0.5)",
@@ -198,21 +207,145 @@ const Analytics = () => {
 
 
 
+  const fetchTotalEarnings = async () => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+
+      // const response = await fetch("http://localhost:5000/api/v1/orders/total-earnings", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/total-earnings", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        },
+      })
+
+      const data = await response.json();
+      console.log("Total earnings data:", data);
+
+      if (response.ok) {
+        const totalEarnings = data.totalRevenueSum || 0;
+        setStats((prevStats) => ({
+          ...prevStats,
+          totalEarnings: totalEarnings,
+        }));
+
+
+        const avg_total_earnings = (data.totalRevenueSum / stats.totalOrders).toFixed(2);
+        console.log("Average total earnings:", avg_total_earnings);
+        setStats((prevStats) => {
+          return {
+            ...prevStats,
+            avgOrderValue: avg_total_earnings,
+          }
+        })
+
+      } else {
+        console.error("Error fetching total earnings:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching total earnings:", error);
+    }
+
+  }
+
+  const fetchTotalOrderstillDate = async () => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/total-orders", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/total-orders", {
+        method: "Get",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        },
+      })
+      const data = await response.json();
+      console.log("Total orders data:", data);
+
+      if (response.ok) {
+        const totalOrderTillDate = data.totalOrders || 0;
+        setStats((prevStats) => {
+          return {
+            ...prevStats,
+            totalOrders: totalOrderTillDate,
+          }
+        })
+      } else {
+        console.error("Error fetching total orders:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching total orders:", error);
+    }
+  }
+
+  const fetchWeeklySalesOverview = async () => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      // const response = await fetch("http://localhost:5000/api/v1/orders/weekly-sales-overview", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-sales-overview", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      if (!data) {
+        console.error("Invalid weekly sales overview data format:", data.message);
+      }
+      console.log("Weekly sales overview data:", data);
+
+      if (response.ok) {
+        const labels = data.weeklySalesOverview.map(item => item.dayOfWeek);
+        const values = data.weeklySalesOverview.map(item => item.totalRevenue);
+
+
+        setWeeklySalesData({
+          labels,
+          datasets: [
+            {
+              label: "Sales (₹)",
+              data: values,
+              backgroundColor: darkMode ? "rgba(124, 58, 237, 0.7)" : "rgba(124, 58, 237, 0.5)",
+              borderColor: "rgba(124, 58, 237, 1)",
+              borderWidth: 1,
+              borderRadius: 4,
+            },
+          ],
+        })
+      }
+
+
+
+    } catch (error) {
+      console.error("Error fetching weekly sales overview:", error);
+    }
+  }
+
+
 
 
   useEffect(() => {
     topSellingFood();
     fetchRevenueTrendData();
     fetchpeakOrderHoursData();
+    fetchTotalEarnings();
+    fetchTotalOrderstillDate();
+    fetchWeeklySalesOverview();
   }, [])
 
 
   // Sample data
-  const salesData = {
+  const salesData = weeklysalesData || {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        label: "Sales ($)",
+        label: "Sales (₹)",
         data: [650, 590, 800, 810, 560, 550, 400],
         backgroundColor: darkMode ? "rgba(124, 58, 237, 0.7)" : "rgba(124, 58, 237, 0.5)",
         borderColor: "rgba(124, 58, 237, 1)",
@@ -249,7 +382,7 @@ const Analytics = () => {
 
 
 
-  // const revenueTrendData = {
+  // const revenueTrenddata = {
   //   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
   //   datasets: [
   //     {
@@ -268,28 +401,28 @@ const Analytics = () => {
   //   ],
   // };
 
-  // const peakHoursData = {
-  //   labels: [
-  //     "8-9 AM",
-  //     "9-10 AM",
-  //     "10-11 AM",
-  //     "11-12 PM",
-  //     "12-1 PM",
-  //     "1-2 PM",
-  //     "2-3 PM",
-  //     "3-4 PM",
-  //   ],
-  //   datasets: [
-  //     {
-  //       label: "Orders",
-  //       data: [10, 25, 35, 45, 60, 40, 30, 20],
-  //       backgroundColor: darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
-  //       borderColor: "rgba(16, 185, 129, 1)",
-  //       borderWidth: 1,
-  //       borderRadius: 4,
-  //     },
-  //   ],
-  // };
+  const peakHoursData = peakOrderHoursData || {
+    labels: [
+      "8-9 AM",
+      "9-10 AM",
+      "10-11 AM",
+      "11-12 PM",
+      "12-1 PM",
+      "1-2 PM",
+      "2-3 PM",
+      "3-4 PM",
+    ],
+    datasets: [
+      {
+        label: "Orders",
+        data: [10, 25, 35, 45, 60, 40, 30, 20],
+        backgroundColor: darkMode ? "rgba(16, 185, 129, 0.7)" : "rgba(16, 185, 129, 0.5)",
+        borderColor: "rgba(16, 185, 129, 1)",
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  };
 
   // Chart options with dark mode support
   const chartOptions = {
@@ -433,7 +566,7 @@ const Analytics = () => {
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Revenue</h3>
               <span className={`px-2 py-1 text-xs rounded-full ${darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800'}`}>+12%</span>
             </div>
-            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>$20,450</p>
+            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>&#8377;{stats.totalEarnings}</p>
             <p className={`mt-1 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
               {formatDate(startDate)} - {formatDate(endDate)}
             </p>
@@ -447,7 +580,7 @@ const Analytics = () => {
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Orders</h3>
               <span className={`px-2 py-1 text-xs rounded-full ${darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800'}`}>+8%</span>
             </div>
-            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>1,245</p>
+            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stats.totalOrders}</p>
             <p className={`mt-1 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
               {formatDate(startDate)} - {formatDate(endDate)}
             </p>
@@ -461,9 +594,9 @@ const Analytics = () => {
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avg. Order Value</h3>
               <span className={`px-2 py-1 text-xs rounded-full ${darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800'}`}>-2%</span>
             </div>
-            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>$16.42</p>
+            <p className={`mt-2 text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stats.avgOrderValue}</p>
             <p className={`mt-1 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
-              vs. $16.75 last period
+              vs. ₹16.75 last period
             </p>
             <div className={`mt-4 h-2 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
               <div className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" style={{ width: '58%' }}></div>
@@ -550,7 +683,7 @@ const Analytics = () => {
               <span className={`px-3 py-1 text-xs rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'}`}>Daily Average</span>
             </div>
             <div className="h-80">
-              <Bar data={peakOrderHoursData} options={chartOptions} />
+              <Bar data={peakHoursData} options={chartOptions} />
             </div>
           </div>
         </div>

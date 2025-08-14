@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { FiMoon, FiSun, FiCalendar, FiDollarSign, FiShoppingBag, FiRefreshCw  } from "react-icons/fi";
+import { FiMoon, FiSun, FiCalendar, FiDollarSign, FiShoppingBag, FiRefreshCw } from "react-icons/fi";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -36,6 +36,12 @@ const Order = () => {
   const [ordersPerDayData, setOrdersPerDayData] = useState(null);
   const [chartLoading, setChartLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [past30daysOrder, setPast30daysOrder] = useState(null);
+  const [orders, setOrders] = useState({
+    today: [],
+    month: [],
+    year: []
+  });
 
   const [monthlyRevenueData, setMonthlyRevenueData] = useState({
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -49,11 +55,6 @@ const Order = () => {
     }]
   });
 
-  const [orders, setOrders] = useState({
-    today: [],
-    month: [],
-    // year: []
-  });
 
   const [dateFilter, setDateFilter] = useState({
     today: { start: new Date(), end: new Date() },
@@ -61,10 +62,10 @@ const Order = () => {
       start: new Date(new Date().setDate(1)),
       end: new Date()
     },
-    // year: {
-    //   start: new Date(new Date().getFullYear(), 0, 1),
-    //   end: new Date()
-    // }
+    year: {
+      start: new Date(new Date().getFullYear(), 0, 1),
+      end: new Date()
+    }
   });
 
   useEffect(() => {
@@ -73,18 +74,14 @@ const Order = () => {
         setIsLoading(true);
         const adminToken = localStorage.getItem("adminToken");
 
-        // const response = await fetch(
-        //   `http://localhost:5000/api/v1/orders/get-all-orders/${adminId}`,
-        //   {
-        const response = await fetch(
-          `https://canteen-order-backend.onrender.com/api/v1/orders/get-all-orders/${adminId}`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${adminToken}`,
-              'Content-Type': 'application/json'
-            }
+        // const response = await fetch(`http://localhost:5000/api/v1/orders/get-all-orders/${adminId}`, {
+          const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/orders/get-all-orders/${adminId}`,{
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${adminToken}`,
+            'Content-Type': 'application/json'
           }
+        }
         );
 
         if (!response.ok) {
@@ -103,24 +100,40 @@ const Order = () => {
           const todayEnd = new Date();
           todayEnd.setHours(23, 59, 59, 999);
 
-          // Calculate date 30 days ago
-          const monthAgo = new Date();
-          monthAgo.setDate(monthAgo.getDate() - 30);
-          monthAgo.setHours(0, 0, 0, 0);
+          const todaysOrders = data.orders.filter(order => {
+            const orderDate = new Date(order.createdAt);
+            return orderDate >= today && orderDate <= todayEnd;
+          });
 
-          const categorized = {
-            today: data.orders.filter(order => {
-              const orderDate = new Date(order.createdAt);
-              return orderDate >= today && orderDate <= todayEnd;
-            }),
-            month: data.orders.filter(order => {
-              const orderDate = new Date(order.createdAt);
-              return orderDate >= monthAgo && orderDate <= todayEnd;
-            })
-          };
-
-          setOrders(categorized);
+          setOrders(prev => ({
+            ...prev,
+            today: todaysOrders
+          }));
         }
+        // if (data.success && data.orders) {
+        //   const today = new Date();
+        //   today.setHours(0, 0, 0, 0);
+        //   const todayEnd = new Date();
+        //   todayEnd.setHours(23, 59, 59, 999);
+
+        //   // Calculate date 30 days ago
+        //   const monthAgo = new Date();
+        //   monthAgo.setDate(monthAgo.getDate() - 30);
+        //   monthAgo.setHours(0, 0, 0, 0);
+
+        //   const categorized = {
+        //     today: data.orders.filter(order => {
+        //       const orderDate = new Date(order.createdAt);
+        //       return orderDate >= today && orderDate <= todayEnd;
+        //     }),
+        //     month: data.orders.filter(order => {
+        //       const orderDate = new Date(order.createdAt);
+        //       return orderDate >= monthAgo && orderDate <= todayEnd;
+        //     })
+        //   };
+
+        //   setOrders(categorized);
+        // }
       } catch (error) {
         toast.error(error.message);
       } finally {
@@ -131,13 +144,46 @@ const Order = () => {
     fetchOrders();
   }, [adminId]);
 
+
+  useEffect(() => {
+    if (activeTab !== "month") return;
+
+    const fetchLast30DaysOrders = async () => {
+      const adminToken = localStorage.getItem("adminToken");
+      try {
+        const response = await fetch("http://localhost:5000/api/v1/orders/last-30-days-orders", {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${adminToken}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: "include"
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          toast.error("Failed to load last 30 days orders");
+          return;
+        }
+        setPast30daysOrder(data.orders);
+
+      } catch (error) {
+        toast.error("Failed to load last 30 days orders");
+      }
+    };
+
+    fetchLast30DaysOrders();
+  }, [activeTab]);
+
+
+
   const fetchMonthlyRevenueData = async () => {
     try {
       setChartLoading(true);
       const adminToken = localStorage.getItem("adminToken");
       const response = await fetch(
-        "http://localhost:5000/api/v1/orders/month-wise-revenues",
-        // "https://canteen-order-backend.onrender.com/api/v1/orders/month-wise-revenues",
+        // "http://localhost:5000/api/v1/orders/month-wise-revenues",
+        "https://canteen-order-backend.onrender.com/api/v1/orders/month-wise-revenues",
         {
           method: "GET",
           headers: {
@@ -204,6 +250,7 @@ const Order = () => {
     try {
       setChartLoading(true);
       const adminToken = localStorage.getItem("adminToken");
+      // const response = await fetch("http://localhost:5000/api/v1/orders/orders-per-day", {
       const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/orders-per-day", {
         method: "GET",
         credentials: "include",
@@ -252,8 +299,8 @@ const Order = () => {
     try {
       const adminToken = localStorage.getItem("adminToken");
 
-      const response = await fetch(
-        `https://canteen-order-backend.onrender.com/api/v1/orders/admin-order-update/${orderId}`,
+      // const response = await fetch(`localhost:5000/api/v1/orders/admin-order-update/${orderId}`,
+      const response = await fetch(`https://canteen-order-backend.onrender.com/api/v1/orders/admin-order-update/${orderId}`,
         {
           method: 'PUT',
           headers: {
@@ -384,11 +431,15 @@ const Order = () => {
     });
   };
 
-  const currentOrders = filterOrdersByDate(
-    orders[activeTab],
-    dateFilter[activeTab].start,
-    dateFilter[activeTab].end
-  );
+  const currentOrders = activeTab === "month"
+    ? (past30daysOrder || [])
+    : (orders.today || []);
+
+  // const currentOrders = filterOrdersByDate(
+  //   orders[activeTab],
+  //   dateFilter[activeTab].start,
+  //   dateFilter[activeTab].end
+  // );
   const pageCount = Math.ceil(currentOrders.length / itemsPerPage);
   const currentItems = currentOrders.slice(
     currentPage * itemsPerPage,
@@ -607,40 +658,39 @@ const Order = () => {
               {lastUpdated ? `Last updated: ${lastUpdated.toLocaleTimeString()}` : 'Data not loaded yet'}
             </div>
           </div>
-      </div>
+        </div>
 
-      {/* Rest of the component remains the same... */}
-      {/* Minimalist Tabs */}
-      <div className={`flex mb-6 border-b gap-6 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <button
-          onClick={() => { setActiveTab("today"); setCurrentPage(0); }}
-          className={`px-4 py-2 text-sm font-medium ${activeTab === "today"
-            ? darkMode
-              ? 'text-white border-b-2 border-white'
-              : 'text-gray-900 border-b-2 border-gray-900 bg-white'
-            : darkMode
-              ? 'text-gray-400 hover:text-white'
-              : 'text-gray-500 hover:text-gray-900 bg-white'
-            }`}
-        >
-          Today's Orders
-        </button>
 
-        <button
-          onClick={() => { setActiveTab("month"); setCurrentPage(0); }}
-          className={`px-4 py-2 text-sm font-medium ${activeTab === "month"
-            ? darkMode
-              ? 'text-white border-b-2 border-white'
-              : 'text-gray-900 border-b-2 border-gray-900 bg-white'
-            : darkMode
-              ? 'text-gray-400 hover:text-white'
-              : 'text-gray-500 hover:text-gray-900 bg-white'
-            }`}
-        >
-          Monthly Orders
-        </button>
+        <div className={`flex mb-6 border-b gap-6 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <button
+            onClick={() => { setActiveTab("today"); setCurrentPage(0); }}
+            className={`px-4 py-2 text-sm font-medium ${activeTab === "today"
+              ? darkMode
+                ? 'text-white border-b-2 border-white'
+                : 'text-gray-900 border-b-2 border-gray-900 bg-white'
+              : darkMode
+                ? 'text-gray-400 hover:text-white'
+                : 'text-gray-500 hover:text-gray-900 bg-white'
+              }`}
+          >
+            Today's Orders
+          </button>
 
-        {/* <button
+          <button
+            onClick={() => { setActiveTab("month"); setCurrentPage(0); }}
+            className={`px-4 py-2 text-sm font-medium ${activeTab === "month"
+              ? darkMode
+                ? 'text-white border-b-2 border-white'
+                : 'text-gray-900 border-b-2 border-gray-900 bg-white'
+              : darkMode
+                ? 'text-gray-400 hover:text-white'
+                : 'text-gray-500 hover:text-gray-900 bg-white'
+              }`}
+          >
+            Last 30 Days Orders
+          </button>
+
+          {/* <button
             onClick={() => { setActiveTab("year"); setCurrentPage(0); }}
             className={`px-4 py-2 text-sm font-medium ${activeTab === "year"
               ? darkMode
@@ -653,176 +703,176 @@ const Order = () => {
           >
             Yearly Orders
           </button> */}
-      </div>
-
-      {/* Date Filter */}
-      <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <FiCalendar className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-          <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>From:</span>
-          <input
-            type="date"
-            value={dateFilter[activeTab].start.toISOString().split('T')[0]}
-            onChange={(e) => setDateFilter({
-              ...dateFilter,
-              [activeTab]: {
-                ...dateFilter[activeTab],
-                start: new Date(e.target.value)
-              }
-            })}
-            className={`px-3 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} w-full sm:w-auto`}
-          />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <FiCalendar className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-          <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>To:</span>
-          <input
-            type="date"
-            value={dateFilter[activeTab].end.toISOString().split('T')[0]}
-            onChange={(e) => setDateFilter({
-              ...dateFilter,
-              [activeTab]: {
-                ...dateFilter[activeTab],
-                end: new Date(e.target.value)
-              }
-            })}
-            className={`px-3 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} w-full sm:w-auto`}
-          />
+
+        {/* Date Filter */}
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <FiCalendar className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+            <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>From:</span>
+            <input
+              type="date"
+              value={dateFilter[activeTab].start.toISOString().split('T')[0]}
+              onChange={(e) => setDateFilter({
+                ...dateFilter,
+                [activeTab]: {
+                  ...dateFilter[activeTab],
+                  start: new Date(e.target.value)
+                }
+              })}
+              className={`px-3 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} w-full sm:w-auto`}
+            />
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <FiCalendar className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+            <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>To:</span>
+            <input
+              type="date"
+              value={dateFilter[activeTab].end.toISOString().split('T')[0]}
+              onChange={(e) => setDateFilter({
+                ...dateFilter,
+                [activeTab]: {
+                  ...dateFilter[activeTab],
+                  end: new Date(e.target.value)
+                }
+              })}
+              className={`px-3 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} w-full sm:w-auto`}
+            />
+          </div>
         </div>
-      </div>
 
 
-      {/* Orders Table */}
-      <div className={`rounded-lg shadow overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-              <tr>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Order ID
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Customer
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Items
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Total
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Date
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Status
-                </th>
-                <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className={`divide-y divide-gray-200 dark:divide-gray-700 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              {currentItems.length > 0 ? (
-                currentItems.map((order) => (
-                  <tr key={order._id} className={`${darkMode ? 'hover:bg-gray-700/80' : 'hover:bg-gray-50'} transition-colors`}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-medium ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        #{order.orderNumber}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                          {order.userInfo?.name || 'N/A'}
+        {/* Orders Table */}
+        <div className={`rounded-lg shadow overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                <tr>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Order ID
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Customer
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Items
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Total
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Date
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Status
+                  </th>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y divide-gray-200 dark:divide-gray-700 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                {currentItems.length > 0 ? (
+                  currentItems.map((order) => (
+                    <tr key={order._id} className={`${darkMode ? 'hover:bg-gray-700/80' : 'hover:bg-gray-50'} transition-colors`}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-medium ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+                          #{order.orderNumber}
                         </span>
-                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {order.userInfo?.email || ''}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-xs">
-                        {order.items.map((item, index) => (
-                          <span
-                            key={index}
-                            className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'} flex items-center gap-1`}
-                          >
-                            <span className="truncate max-w-[100px]">{item.foodName}</span>
-                            <span className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>×{item.quantity}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                            {order.userInfo?.name || 'N/A'}
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                        ₹{order.totalPrice}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        {formatDate(order.createdAt)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
-                      >
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <select
-                          value={order.status.toLowerCase()}
-                          onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                          className={`text-xs border rounded-md px-3 py-1.5 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
+                          <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            {order.userInfo?.email || ''}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {order.items.map((item, index) => (
+                            <span
+                              key={index}
+                              className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'} flex items-center gap-1`}
+                            >
+                              <span className="truncate max-w-[100px]">{item.foodName}</span>
+                              <span className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>×{item.quantity}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                          ₹{order.totalPrice}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {formatDate(order.createdAt)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
                         >
-                          <option value="pending">Pending</option>
-                          <option value="preparing">Preparing</option>
-                          <option value="ready">Ready</option>
-                          <option value="delivered">Delivered</option>
-                        </select>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex space-x-2">
+                          <select
+                            value={order.status.toLowerCase()}
+                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                            className={`text-xs border rounded-md px-3 py-1.5 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="preparing">Preparing</option>
+                            <option value="ready">Ready</option>
+                            <option value="delivered">Delivered</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-8 text-center">
+                      <div className={`flex flex-col items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <FiShoppingBag className="w-12 h-12 mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No orders found</p>
+                        <p className="text-sm">Try adjusting your date filters</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center">
-                    <div className={`flex flex-col items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <FiShoppingBag className="w-12 h-12 mb-4 opacity-50" />
-                      <p className="text-lg font-medium">No orders found</p>
-                      <p className="text-sm">Try adjusting your date filters</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {pageCount > 1 && (
-        <div className="flex justify-center mt-6">
-          <ReactPaginate
-            previousLabel={'Previous'}
-            nextLabel={'Next'}
-            breakLabel={'...'}
-            pageCount={pageCount}
-            marginPagesDisplayed={2}
-            pageRangeDisplayed={5}
-            onPageChange={handlePageClick}
-            containerClassName="flex items-center gap-1"
-            pageLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
-            activeLinkClassName="bg-purple-600 text-white border-purple-600"
-            previousLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
-            nextLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
-            disabledLinkClassName="opacity-50 cursor-not-allowed"
-            forcePage={currentPage}
-          />
-        </div>
-      )}
-    </div>
+        {pageCount > 1 && (
+          <div className="flex justify-center mt-6">
+            <ReactPaginate
+              previousLabel={'Previous'}
+              nextLabel={'Next'}
+              breakLabel={'...'}
+              pageCount={pageCount}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={5}
+              onPageChange={handlePageClick}
+              containerClassName="flex items-center gap-1"
+              pageLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              activeLinkClassName="bg-purple-600 text-white border-purple-600"
+              previousLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              nextLinkClassName="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              disabledLinkClassName="opacity-50 cursor-not-allowed"
+              forcePage={currentPage}
+            />
+          </div>
+        )}
+      </div>
     </div >
   );
 };
