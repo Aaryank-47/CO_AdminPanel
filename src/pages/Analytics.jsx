@@ -161,7 +161,7 @@ const Analytics = () => {
     const adminToken = localStorage.getItem("adminToken");
     try {
       // const response = await fetch("http://localhost:5000/api/v1/orders/weekly-revenues-of-month", {
-        const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-revenues-of-month", {
+      const response = await fetch("https://canteen-order-backend.onrender.com/api/v1/orders/weekly-revenues-of-month", {
         method: "GET",
         credentials: "include",
         headers: {
@@ -226,20 +226,15 @@ const Analytics = () => {
 
       if (response.ok) {
         const totalEarnings = data.totalRevenueSum || 0;
-        setStats((prevStats) => ({
-          ...prevStats,
-          totalEarnings: totalEarnings,
-        }));
-
 
         const avg_total_earnings = (data.totalRevenueSum / stats.totalOrders).toFixed(2);
         console.log("Average total earnings:", avg_total_earnings);
-        setStats((prevStats) => {
-          return {
-            ...prevStats,
-            avgOrderValue: avg_total_earnings,
-          }
-        })
+
+        setStats((prevStats) => ({
+          ...prevStats,
+          totalEarnings: totalEarnings,
+          avgOrderValue: avg_total_earnings,
+        }));
 
       } else {
         console.error("Error fetching total earnings:", data.message);
@@ -263,6 +258,10 @@ const Analytics = () => {
         },
       })
       const data = await response.json();
+      if (!data || !data.totalOrders) {
+        console.error("Invalid total orders data format:", data.message);
+        return;
+      }
       console.log("Total orders data:", data);
 
       if (response.ok) {
