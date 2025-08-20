@@ -222,19 +222,29 @@ const Analytics = () => {
       })
 
       const data = await response.json();
+      if (!data) {
+        console.error("Invalid total earnings data format:", data.message);
+        return;
+      }
       console.log("Total earnings data:", data);
 
       if (response.ok) {
-        const totalEarnings = data.totalRevenueSum || 0;
+        const totalEarnings = data.totalRevenueSum;
+        console.log("Total earnings:", totalEarnings);
 
-        const avg_total_earnings = (data.totalRevenueSum / stats.totalOrders).toFixed(2);
-        console.log("Average total earnings:", avg_total_earnings);
+        setStats((prevStats) => {
+          const avg_total_earnings = prevStats.totalOrders > 0
+            ? (totalEarnings / prevStats.totalOrders).toFixed(2)
+            : 0;
 
-        setStats((prevStats) => ({
-          ...prevStats,
-          totalEarnings: totalEarnings,
-          avgOrderValue: avg_total_earnings,
-        }));
+          console.log("Average total earnings:", avg_total_earnings);
+
+          return {
+            ...prevStats,
+            totalEarnings: totalEarnings,
+            avgOrderValue: avg_total_earnings,
+          };
+        });
 
       } else {
         console.error("Error fetching total earnings:", data.message);
@@ -330,13 +340,17 @@ const Analytics = () => {
 
 
   useEffect(() => {
-    topSellingFood();
-    fetchRevenueTrendData();
-    fetchpeakOrderHoursData();
-    fetchTotalEarnings();
-    fetchTotalOrderstillDate();
-    fetchWeeklySalesOverview();
-  }, [])
+    const fetchData = async () => {
+      await fetchTotalOrderstillDate();
+      await fetchTotalEarnings();
+      topSellingFood();
+      fetchRevenueTrendData();
+      fetchpeakOrderHoursData();
+      fetchWeeklySalesOverview();
+    };
+
+    fetchData();
+  }, []);
 
 
   // Sample data
@@ -354,7 +368,7 @@ const Analytics = () => {
     ],
   };
 
-  // const foodPopularityData = {
+  // const foodpopularityData = topSellingFood() ||{
   //   labels: ["Burger", "Pizza", "Sandwich", "Pasta", "Salad"],
   //   datasets: [
   //     {

@@ -8,7 +8,6 @@ const PrivateRoute = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Simulate checking auth status (remove this if you don't need it)
     const timer = setTimeout(() => setIsCheckingAuth(false), 500);
     return () => clearTimeout(timer);
   }, []);
