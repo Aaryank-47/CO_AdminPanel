@@ -39,7 +39,7 @@ const LoginPage = () => {
     },
     onSuccess: (data) => {
       if (!data) {
-        console.log("There is problem in fetching the data");
+        // console.log("There is problem in fetching the data");
         return;
       }
 
@@ -52,7 +52,7 @@ const LoginPage = () => {
       navigate('/');
     },
     onError: (error) => {
-      console.error("Login error:", error.message);
+      // console.error("Login error:", error.message);
       toast.error(error.message);
     }
   });
